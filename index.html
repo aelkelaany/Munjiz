@@ -1702,12 +1702,12 @@ textarea{resize:vertical}
           <div style="font-size:20px;font-weight:700;color:#f9fafb;margin-bottom:4px">مصفوفة أيزنهاور</div>
           <div style="font-size:13px;color:#6b7280">صنّف مهامك حسب الأهمية والإلحاح</div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280">
-            <span style="width:8px;height:8px;border-radius:50%;background:#334155;display:inline-block"></span>
-            المشروع:
-          </div>
-          <select id="eis-project-filter" onchange="renderEisenhower()" style="background:#374151;border:1px solid #374151;border-radius:8px;padding:5px 10px;color:#f9fafb;font-size:13px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <select id="eis-ws-filter" onchange="filterEisenhowerWs()" style="background:#374151;border:1px solid #4b5563;border-radius:8px;padding:6px 12px;color:#e5e7eb;font-size:13px;cursor:pointer">
+            <option value="all">كل مساحات العمل</option>
+          </select>
+          <span style="color:#4b5563">›</span>
+          <select id="eis-project-filter" onchange="renderEisenhower()" style="background:#374151;border:1px solid #4b5563;border-radius:8px;padding:6px 12px;color:#e5e7eb;font-size:13px;cursor:pointer">
             <option value="all">كل المشاريع</option>
           </select>
         </div>
@@ -2559,7 +2559,7 @@ function nav(page) {
   if (page === 'dashboard') { renderDashboard(); }
   if (page === 'relations') { renderRelations(); }
   if (page === 'recurring') { renderRecurring(); }
-  if (page === 'eisenhower') { renderEisenhower(); }
+  if (page === 'eisenhower') { resetEisenhowerFilters(); renderEisenhower(); }
   if (page === 'backup') { renderBackupStats(); }
   if (page === 'workspaces') { renderWorkspacesPage(); }
   closeSidebar();
@@ -2911,11 +2911,12 @@ let tbSlotMin = 30; // slot size in minutes: 15 | 30 | 60
 let tbSelectedTaskId = null;
 
 function renderTimebox() {
-  const proj = PROJECTS[currentProjectId];
-  if (!proj) return;
   const container = document.getElementById('timebox-container');
   if (!container) return;
-  if (!proj.timeboxData) proj.timeboxData = {};
+  // Global timebox — all projects
+  const allTasks = Object.values(PROJECTS).flatMap(p =>
+    p.tasks.map(t => ({...t, projectName: p.name, projectColor: p.color, _proj: p}))
+  );
 
   const dayNames = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -2948,7 +2949,7 @@ function renderTimebox() {
 
   const weekDays = getWeekDays(tbDate);
   const slots = daySlots();
-  const unscheduled = proj.tasks.filter(t => !t.done && !tbIsScheduled(proj, t.id));
+  const unscheduled = allTasks.filter(t => !t.done && !Object.values(TIMEBOX_DATA).includes(t.id));
 
   // check if task is scheduled anywhere
   function tbIsScheduled(p, tid){
@@ -2956,7 +2957,7 @@ function renderTimebox() {
   }
 
   // get task scheduled at slot
-  function taskAt(dk,h,m){ return proj.timeboxData[slotKey(dk,h,m)]; }
+  function taskAt(dk,h,m){ return TIMEBOX_DATA[slotKey(dk,h,m)]; }
 
   // how many slots does a task span?
   function slotsSpan(task){ return Math.max(1, Math.ceil((task.duration||60)/tbSlotMin)); }
@@ -2990,12 +2991,15 @@ function renderTimebox() {
     const slotH = tbSlotMin === 60 ? 44 : tbSlotMin===30 ? 44 : 36;
     const blockH = (span * slotH) - 6;
     const dur = task.duration||60;
+    const projColor = task.projectColor || '#8b5cf6';
+    const projName = task.projectName || '';
     return `<div class="tb-block${task.done?' done-tb':''}"
-      style="border-color:${pc.border};background:${pc.bg};color:${pc.color};
+      style="border-right:3px solid ${projColor};background:${pc.bg};color:${pc.color};
              height:${blockH}px;overflow:hidden;position:relative;cursor:pointer;"
-      onclick="openTbPopup('${task.id}','${dk}')" title="اضغط لعرض التفاصيل">
-      <div style="font-size:12px;font-weight:500;line-height:1.4">${task.title.length>28?task.title.slice(0,28)+'…':task.title}</div>
-      ${span>1?`<div style="font-size:10px;opacity:.6;margin-top:2px">${dur} دقيقة</div>`:''}
+      onclick="openTbPopup('${task.id}','${dk}')" title="${projName} — ${task.title}">
+      <div style="font-size:9px;color:${projColor};margin-bottom:1px;opacity:.9">${projName}</div>
+      <div style="font-size:12px;font-weight:500;line-height:1.3">${task.title.length>26?task.title.slice(0,26)+'…':task.title}</div>
+      ${span>1?`<div style="font-size:10px;opacity:.5;margin-top:1px">${dur} د</div>`:''}
     </div>`;
   }
 
@@ -3067,7 +3071,10 @@ function renderTimebox() {
             const p=PRIORITY_MAP[t.priority]||PRIORITY_MAP.medium;
             const sel=tbSelectedTaskId===t.id;
             const dur=t.duration||60;
+            const projColor = t.projectColor||'#8b5cf6';
+            const projName = t.projectName||'';
             return `<div class="unscheduled-chip${sel?' tb-selected-task':''}" onclick="selectTbTask('${t.id}')">
+              <div style="font-size:9px;color:${projColor};margin-bottom:2px">${projName}</div>
               <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
                 <span class="priority-badge ${p.cls}" style="font-size:10px;padding:1px 5px">${p.label}</span>
                 <span style="font-size:10px;color:var(--text-muted)">${dur} د</span>
@@ -3157,28 +3164,22 @@ function selectTbTask(taskId){
 
 function placeTbTask(dk, h, m){
   if(!tbSelectedTaskId) return;
-  const proj = PROJECTS[currentProjectId];
-  if(!proj.timeboxData) proj.timeboxData={};
-
-  // remove from previous slot
-  Object.keys(proj.timeboxData).forEach(k=>{ if(proj.timeboxData[k]===tbSelectedTaskId) delete proj.timeboxData[k]; });
-
-  // place at new slot
-  proj.timeboxData[`${dk}_${h}_${m}`] = tbSelectedTaskId;
+  // Remove from any previous slot globally
+  Object.keys(TIMEBOX_DATA).forEach(k=>{ if(TIMEBOX_DATA[k]===tbSelectedTaskId) delete TIMEBOX_DATA[k]; });
+  // Place globally
+  TIMEBOX_DATA[`${dk}_${h}_${m}`] = tbSelectedTaskId;
   tbSelectedTaskId = null;
   renderTimebox();
   showToast('تم تجديل المهمة ✓');
 }
 
 function removeTbSlot(dk, taskId){
-  const proj = PROJECTS[currentProjectId];
-  if(!proj.timeboxData) return;
-  Object.keys(proj.timeboxData).forEach(k=>{
-    if(proj.timeboxData[k]===taskId) delete proj.timeboxData[k];
+  Object.keys(TIMEBOX_DATA).forEach(k=>{
+    if(TIMEBOX_DATA[k]===taskId) delete TIMEBOX_DATA[k];
   });
+  autoSaveData();
   renderTimebox();
 }
-
 // ── TIMEBOX POPUP ──
 let tbPopupTaskId = null;
 let tbPopupDk = null;
@@ -3231,11 +3232,6 @@ function tbPopupToggleDone() {
 
 function tbPopupRemove() {
   if (!tbPopupTaskId) return;
-  const proj = PROJECTS[currentProjectId];
-  if (!proj.timeboxData) return;
-  Object.keys(proj.timeboxData).forEach(k => {
-    if (proj.timeboxData[k] === tbPopupTaskId) delete proj.timeboxData[k];
-  });
   document.getElementById('tb-popup-overlay').style.display = 'none';
   renderTimebox();
   showToast('تمت إزالة المهمة من الجدول');
@@ -3764,6 +3760,7 @@ function autoSaveData() {
       relations: RELATIONS,
       recurring: RECURRING,
       projectGroups: WORKSPACES,
+      timeboxData: TIMEBOX_DATA,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem('munjiz-data', JSON.stringify(data));
@@ -4101,28 +4098,74 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════
 let RELATIONS = [];
 let RECURRING = [];
+// Global timebox — shared across all projects
+// key: "YYYY-MM-DD_H_M", value: taskId
+let TIMEBOX_DATA = {};
 
 // ══════════════════════════════════════
 // EISENHOWER MATRIX
 // ══════════════════════════════════════
+function resetEisenhowerFilters() {
+  const wsSel = document.getElementById('eis-ws-filter');
+  const projSel = document.getElementById('eis-project-filter');
+  if (wsSel) wsSel.innerHTML = '<option value="all">كل مساحات العمل</option>';
+  if (projSel) projSel.innerHTML = '<option value="all">كل المشاريع</option>';
+}
+
+function filterEisenhowerWs() {
+  const wsSel = document.getElementById('eis-ws-filter');
+  const projSel = document.getElementById('eis-project-filter');
+  if (!wsSel || !projSel) return;
+  const wsVal = wsSel.value;
+  projSel.innerHTML = '<option value="all">كل المشاريع</option>';
+  const projIds = wsVal === 'all' ? Object.keys(PROJECTS)
+    : (WORKSPACES.find(w => w.id === wsVal)?.projectIds || []);
+  projIds.forEach(pid => {
+    const p = PROJECTS[pid]; if (!p) return;
+    const opt = document.createElement('option');
+    opt.value = pid; opt.textContent = p.name;
+    projSel.appendChild(opt);
+  });
+  renderEisenhower();
+}
+
 function renderEisenhower() {
   const grid = document.getElementById('eis-grid');
   if (!grid) return;
 
+  // Populate workspace filter
+  const wsSel = document.getElementById('eis-ws-filter');
+  if (wsSel && wsSel.options.length <= 1) {
+    WORKSPACES.forEach(ws => {
+      const opt = document.createElement('option');
+      opt.value = ws.id;
+      opt.textContent = (typeof ws.icon==='string' ? ws.icon+' ' : '') + ws.name;
+      wsSel.appendChild(opt);
+    });
+  }
+
   // Populate project filter
   const filterSel = document.getElementById('eis-project-filter');
+  const wsVal = wsSel?.value || 'all';
   if (filterSel && filterSel.options.length <= 1) {
-    Object.values(PROJECTS).forEach(p => {
+    const projIds = wsVal === 'all' ? Object.keys(PROJECTS)
+      : (WORKSPACES.find(w => w.id === wsVal)?.projectIds || []);
+    projIds.forEach(pid => {
+      const p = PROJECTS[pid]; if (!p) return;
       const opt = document.createElement('option');
-      opt.value = p.id; opt.textContent = p.name;
+      opt.value = pid; opt.textContent = p.name;
       filterSel.appendChild(opt);
     });
   }
-  const filterVal = filterSel?.value || 'all';
 
+  const filterVal = filterSel?.value || 'all';
   let allTasks = Object.values(PROJECTS).flatMap(p =>
     p.tasks.map(t => ({...t, projectName:p.name, projectColor:p.color, projectId:p.id}))
   );
+  if (wsVal !== 'all') {
+    const wsProjs = WORKSPACES.find(w => w.id === wsVal)?.projectIds || [];
+    allTasks = allTasks.filter(t => wsProjs.includes(t.projectId));
+  }
   if (filterVal !== 'all') allTasks = allTasks.filter(t => t.projectId === filterVal);
   allTasks = allTasks.filter(t => !t.done);
 
@@ -5582,20 +5625,23 @@ setInterval(() => {
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.projects || !data.savedAt) return;
-    const savedDate = new Date(data.savedAt);
-    const diffHours = (Date.now() - savedDate) / 3600000;
-    if (diffHours > 72) return; // Don't restore old data
-    // Only restore if current data is empty (fresh load)
-    const hasCurrentData = Object.values(PROJECTS).some(p => p.tasks.length > 5);
-    if (!hasCurrentData && data.savedAt) {
+    const diffDays = (Date.now() - new Date(data.savedAt)) / 86400000;
+    if (diffDays > 30) return; // 30 days
+    const hasCurrentData = Object.values(PROJECTS).some(p => p.tasks.length > 0);
+    if (!hasCurrentData) {
       Object.assign(PROJECTS, data.projects);
       if (data.journal?.length) JOURNAL.push(...data.journal);
       if (data.resources?.length) RESOURCES.push(...data.resources);
       if (data.relations?.length) RELATIONS.push(...data.relations);
       if (data.recurring?.length) RECURRING.push(...data.recurring);
-      if (data.projectGroups?.length) PROJECT_GROUPS.splice(0,PROJECT_GROUPS.length,...data.projectGroups);
+      // Restore workspaces
+      const ws = data.projectGroups || data.workspaces || [];
+      if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
+      // Restore global timebox
+      if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
     }
   } catch(e) {}
+  setTimeout(() => { renderSidebarWorkspaces(); }, 0);
 })();
 
 // ══════════════════════════════════════
