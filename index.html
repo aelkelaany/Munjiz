@@ -1448,7 +1448,47 @@ textarea{resize:vertical}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 3H8"/></svg>
             الصندوق — Inbox
           </div>
-          <div class="inbox-list" id="inbox-list">     </div>
+          <div class="inbox-list" id="inbox-list">
+            <div class="inbox-item" data-id="d1">
+              <span class="inbox-dot"></span>
+              <span class="inbox-text">متابعة ربط وزارة الطاقة</span>
+              <span class="inbox-time">منذ قليل</span>
+              <div class="inbox-actions">
+                <button class="mini-btn convert" title="حول لمهمة" onclick="convertToTask('d1','متابعة ربط وزارة الطاقة')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <button class="mini-btn del" title="احذف" onclick="deleteDump('d1')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="inbox-item" data-id="d2">
+              <span class="inbox-dot"></span>
+              <span class="inbox-text">تسجيل ابني في تدريب سباحة</span>
+              <span class="inbox-time">منذ ساعة</span>
+              <div class="inbox-actions">
+                <button class="mini-btn convert" title="حول لمهمة" onclick="convertToTask('d2','تسجيل ابني في تدريب سباحة')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <button class="mini-btn del" title="احذف" onclick="deleteDump('d2')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="inbox-item" data-id="d3">
+              <span class="inbox-dot"></span>
+              <span class="inbox-text">تخطيط الإجازة السنوية — 27 يوم متبقية</span>
+              <span class="inbox-time">أمس</span>
+              <div class="inbox-actions">
+                <button class="mini-btn convert" title="حول لمهمة" onclick="convertToTask('d3','تخطيط الإجازة السنوية')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <button class="mini-btn del" title="احذف" onclick="deleteDump('d3')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1500,7 +1540,11 @@ textarea{resize:vertical}
             <h1 id="proj-page-title" style="font-size:22px;font-weight:700;color:#f9fafb;margin:0 0 4px"></h1>
             <div id="proj-page-meta" style="font-size:12px;color:#6b7280"></div>
           </div>
-          <button onclick="openCoverPicker('project')" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#374151;border:1px solid #374151;border-radius:7px;color:#6b7280;font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#64748b'">
+        <button onclick="moveProjectToWorkspace(currentProjectId)" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#374151;border:1px solid #374151;border-radius:7px;color:#9ca3af;font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='#a78bfa';this.style.borderColor='#8b5cf6'" onmouseout="this.style.color='#9ca3af';this.style.borderColor='#374151'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            نقل لمساحة
+          </button>
+            <button onclick="openCoverPicker('project')" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#374151;border:1px solid #374151;border-radius:7px;color:#6b7280;font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#64748b'">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             إضافة غلاف
           </button>
@@ -2504,7 +2548,53 @@ textarea{resize:vertical}
 // ══════════════════════════════════════
 // DATA MODEL — per-project
 // ══════════════════════════════════════
-const PROJECTS = {};
+const PROJECTS = {
+  p1: {
+    id:'p1', name:'العمل — MEWA', icon:'🏛️', color:'#10b981',
+    tasks:[
+      {id:'t1',title:'مراجعة متطلبات نظام EWIS',priority:'urgent',date:'2026-05-29',importance:'high',done:true,status:'مكتمل',duration:60},
+      {id:'t2',title:'متابعة ربط وزارة الطاقة',priority:'urgent',date:'2026-06-04',importance:'high',done:false,status:'قيد التنفيذ',duration:90},
+      {id:'t3',title:'متابعة ربط السعودي للأعمال',priority:'high',date:'2026-06-08',importance:'low',done:false,status:'للبدء',duration:60},
+      {id:'t4',title:'تجهيز تسليم المهام قبل الإجازة',priority:'urgent',date:'2026-06-15',importance:'high',done:false,status:'قيد التنفيذ',duration:120},
+      {id:'t5',title:'تقديم طلب الإجازة',priority:'urgent',date:'2026-06-03',importance:'low',done:false,status:'للبدء',duration:30},
+    ],
+    kanban:[
+      {id:'k1',name:'للبدء',color:'var(--text-secondary)'},
+      {id:'k2',name:'قيد التنفيذ',color:'var(--blue)'},
+      {id:'k3',name:'مكتمل',color:'var(--accent-text)'},
+    ]
+  },
+  p2: {
+    id:'p2', name:'التعلم الذاتي', icon:'📚', color:'#38bdf8',
+    tasks:[
+      {id:'t6',title:'مذاكرة Power BI',priority:'medium',date:'',importance:'high',done:false,status:'للبدء',duration:90},
+      {id:'t7',title:'مذاكرة إدارة استراتيجية',priority:'medium',date:'',importance:'high',done:false,status:'للبدء',duration:60},
+      {id:'t8',title:'تحسين مستوى الإنجليزي',priority:'low',date:'',importance:'low',done:false,status:'قيد التنفيذ',duration:45},
+      {id:'t9',title:'البحث في موضوع MBA',priority:'low',date:'',done:false,status:'للبدء'},
+    ],
+    kanban:[
+      {id:'k4',name:'للبدء',color:'var(--text-secondary)'},
+      {id:'k5',name:'قيد التنفيذ',color:'var(--blue)'},
+      {id:'k6',name:'مكتمل',color:'var(--accent-text)'},
+    ]
+  },
+  p3: {
+    id:'p3', name:'الأسرة والبيت', icon:'🏠', color:'#fb923c',
+    tasks:[
+      {id:'t10',title:'تسجيل ابني في تدريب سباحة',priority:'high',date:'',done:false,status:'للبدء'},
+      {id:'t11',title:'مذاكرة رياضيات مع ابني',priority:'high',date:'',done:false,status:'قيد التنفيذ'},
+      {id:'t12',title:'تخطيط الإجازة السنوية',priority:'urgent',date:'2026-06-29',done:false,status:'للبدء'},
+      {id:'t13',title:'تقديم الأولاد في المدرسة',priority:'medium',date:'',done:false,status:'للبدء'},
+      {id:'t14',title:'البحث عن شقة للشراء',priority:'medium',date:'',done:false,status:'للبدء'},
+      {id:'t15',title:'تعريف ابني على البرمجة',priority:'low',date:'',done:false,status:'للبدء'},
+    ],
+    kanban:[
+      {id:'k7',name:'للبدء',color:'var(--text-secondary)'},
+      {id:'k8',name:'قيد التنفيذ',color:'var(--blue)'},
+      {id:'k9',name:'مكتمل',color:'var(--accent-text)'},
+    ]
+  }
+};
 
 const PRIORITY_MAP = {
   urgent:{cls:'p-urgent',label:'عاجل'},
@@ -3503,6 +3593,9 @@ function renderProjects() {
         <td><span style="font-size:12px;color:${statusColor}">${statusText}</span></td>
         <td>
           <div class="proj-tree-actions">
+            <button onclick="event.stopPropagation();moveProjectToWorkspace('${p.id}')" class="proj-tree-btn" title="نقل لمساحة عمل">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
             <button onclick="event.stopPropagation();deleteProject('${p.id}')" class="proj-tree-btn del" title="حذف">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
             </button>
@@ -3541,6 +3634,78 @@ function toggleWsGroup(wsId) {
 }
 
 
+
+function moveProjectToWorkspace(projId) {
+  const proj = PROJECTS[projId];
+  if (!proj) return;
+  const currentWs = WORKSPACES.find(w => w.projectIds.includes(projId));
+
+  // Build dialog
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#1f2937;border:1px solid #374151;border-radius:16px;padding:22px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.7)';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:15px;font-weight:600;color:#f9fafb;margin-bottom:6px';
+  title.textContent = 'نقل المشروع';
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-size:13px;color:#6b7280;margin-bottom:16px';
+  sub.textContent = `اختر مساحة العمل لنقل "${proj.name}" إليها`;
+
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;margin-bottom:16px';
+
+  // Option: no workspace
+  const noneOpt = document.createElement('button');
+  noneOpt.style.cssText = `display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:1px solid ${!currentWs ? '#8b5cf6' : '#374151'};background:${!currentWs ? 'rgba(139,92,246,.1)' : 'none'};cursor:pointer;font-family:inherit;transition:all .15s;color:#e5e7eb`;
+  noneOpt.innerHTML = '<span style="font-size:18px">📌</span><span style="flex:1;font-size:13.5px">بدون مساحة عمل</span>' + (!currentWs ? '<span style="color:#a78bfa;font-size:12px">الحالية</span>' : '');
+  noneOpt.onclick = () => { doMove(null); overlay.remove(); };
+
+  list.appendChild(noneOpt);
+
+  WORKSPACES.forEach(ws => {
+    const isCurrent = ws.id === currentWs?.id;
+    const btn = document.createElement('button');
+    btn.style.cssText = `display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:1px solid ${isCurrent ? '#8b5cf6' : '#374151'};background:${isCurrent ? 'rgba(139,92,246,.1)' : 'none'};cursor:pointer;font-family:inherit;transition:all .15s;color:#e5e7eb`;
+    btn.onmouseover = () => { if (!isCurrent) { btn.style.background = '#374151'; } };
+    btn.onmouseout = () => { if (!isCurrent) { btn.style.background = 'none'; } };
+    btn.innerHTML = `<span style="font-size:18px;flex-shrink:0">${ws.icon || '💼'}</span><div style="flex:1;text-align:right"><div style="font-size:13.5px;font-weight:500">${ws.name}</div><div style="font-size:11px;color:#6b7280;margin-top:1px">${ws.projectIds.length} مشروع</div></div>${isCurrent ? '<span style="color:#a78bfa;font-size:12px">الحالية</span>' : ''}`;
+    btn.onclick = () => { doMove(ws.id); overlay.remove(); };
+    list.appendChild(btn);
+  });
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:9px;border:1px solid #374151;background:none;border-radius:8px;color:#9ca3af;cursor:pointer;font-size:13px;font-family:inherit';
+  cancelBtn.textContent = 'إلغاء';
+  cancelBtn.onclick = () => overlay.remove();
+
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  box.appendChild(title);
+  box.appendChild(sub);
+  box.appendChild(list);
+  box.appendChild(cancelBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  function doMove(targetWsId) {
+    // Remove from all workspaces
+    WORKSPACES.forEach(w => { w.projectIds = w.projectIds.filter(id => id !== projId); });
+    // Add to target
+    if (targetWsId) {
+      const targetWs = WORKSPACES.find(w => w.id === targetWsId);
+      if (targetWs && !targetWs.projectIds.includes(projId)) targetWs.projectIds.push(projId);
+    }
+    renderSidebarWorkspaces();
+    renderProjects();
+    renderWorkspacesPage();
+    autoSaveData();
+    showToast(`تم نقل "${proj.name}" ✓`);
+  }
+}
 
 function deleteProject(projId) {
   const proj = PROJECTS[projId];
@@ -3831,14 +3996,33 @@ function importJSON(event) {
           RESOURCES.splice(0, RESOURCES.length, ...(data.resources || []));
           RELATIONS.splice(0, RELATIONS.length, ...(data.relations || []));
           RECURRING.splice(0, RECURRING.length, ...(data.recurring || []));
+          // Import workspaces/projectGroups
+          const importedWs = data.projectGroups || data.workspaces || [];
+          if (importedWs.length) {
+            WORKSPACES.splice(0, WORKSPACES.length, ...importedWs);
+          }
         } else {
           Object.assign(PROJECTS, data.projects);
           JOURNAL.push(...(data.journal || []));
           RESOURCES.push(...(data.resources || []));
           RELATIONS.push(...(data.relations || []));
           RECURRING.push(...(data.recurring || []));
+          // Merge workspaces — add new ones, merge projectIds into existing
+          const importedWs = data.projectGroups || data.workspaces || [];
+          importedWs.forEach(iws => {
+            const existing = WORKSPACES.find(w => w.id === iws.id || w.name === iws.name);
+            if (existing) {
+              // Merge project IDs
+              iws.projectIds.forEach(pid => {
+                if (!existing.projectIds.includes(pid)) existing.projectIds.push(pid);
+              });
+            } else {
+              WORKSPACES.push(iws);
+            }
+          });
         }
         refreshSidebarProjects();
+        renderSidebarWorkspaces();
         renderBackupStats();
         showToast('تم استيراد البيانات بنجاح ✓');
       });
@@ -4008,7 +4192,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // STAGE 3 — DATA
 // ══════════════════════════════════════
 let RELATIONS = [];
-let RECURRING = [];
+let RECURRING = [
+  {id:'rc1',title:'مراجعة الأهداف الأسبوعية',freq:'weekly',priority:'high',projectId:'p1',startDate:'2026-06-01',lastRun:null,active:true},
+  {id:'rc2',title:'قراءة القرآن',freq:'daily',priority:'urgent',projectId:'p1',startDate:'2026-06-01',lastRun:'2026-06-01',active:true},
+  {id:'rc3',title:'مراجعة Brain Dump',freq:'weekly',priority:'medium',projectId:'p1',startDate:'2026-06-01',lastRun:null,active:true},
+];
 
 // ══════════════════════════════════════
 // EISENHOWER MATRIX
@@ -4464,7 +4652,11 @@ function checkRecurringDue() {
 // ══════════════════════════════════════
 // PROJECT GROUPS
 // ══════════════════════════════════════
-let WORKSPACES = [];
+let WORKSPACES = [
+  {id:'ws1', name:'العمل', color:'#10b981', icon:'💼', projectIds:['p1']},
+  {id:'ws2', name:'التعلم', color:'#38bdf8', icon:'📚', projectIds:['p2']},
+  {id:'ws3', name:'الشخصي', color:'#fb923c', icon:'🏠', projectIds:['p3']},
+];
 // Alias for backward compat
 let PROJECT_GROUPS = WORKSPACES;
 
@@ -4817,7 +5009,11 @@ function deleteJournalEntry(id) {
 // ══════════════════════════════════════
 // STAGE 2 — LEARNING RESOURCES
 // ══════════════════════════════════════
-let RESOURCES = [];
+let RESOURCES = [
+  {id:'r1',title:'توثيق Power BI الرسمي',type:'link',url:'https://learn.microsoft.com/ar-sa/power-bi/',desc:'المرجع الكامل لـ Power BI',status:'قيد الدراسة',taskId:'t6',notes:[{id:'n1',title:'خطوات البداية',content:'<ul><li>ابدأ بقسم Get Started</li><li>راجع DAX expressions</li><li>Power Query أساسي قبل أي حاجة</li></ul>',createdAt:'2026-05-20T09:00:00',updatedAt:'2026-05-25T14:30:00'},{id:'n2',title:'ملاحظات DAX',content:'<p>DAX = Data Analysis Expressions</p><p>أهم الدوال: CALCULATE, FILTER, ALL, SUMX</p>',createdAt:'2026-05-22T11:00:00',updatedAt:'2026-06-01T08:15:00'}]},
+  {id:'r2',title:'كتاب GTD — Getting Things Done',type:'book',url:'',desc:'David Allen — أساس نظام التخطيط',status:'لم أبدأ',taskId:'',notes:[{id:'n3',title:'الفكرة الأساسية',content:'<p>دماغك للتفكير مش للتذكر</p><blockquote>Your mind is for having ideas, not holding them</blockquote>',createdAt:'2026-04-10T08:00:00',updatedAt:'2026-04-10T08:00:00'},{id:'n4',title:'الخطوات الـ 5',content:'<ol><li><strong>Capture</strong> — اصطياد كل حاجة</li><li><strong>Clarify</strong> — وضّح إيه هي</li><li><strong>Organize</strong> — رتّب في مكانها</li><li><strong>Reflect</strong> — راجع أسبوعياً</li><li><strong>Engage</strong> — اشتغل بثقة</li></ol>',createdAt:'2026-04-12T10:30:00',updatedAt:'2026-05-15T16:00:00'}]},
+  {id:'r3',title:'قناة Ali Abdaal — YouTube',type:'video',url:'https://youtube.com/@aliabdaal',desc:'إنتاجية وتخطيط شخصي',status:'قيد الدراسة',taskId:'',notes:[{id:'n5',title:'فيديوهات مهمة',content:'<ul><li>How I take notes</li><li>My productivity system</li><li>Second Brain explained</li></ul>',createdAt:'2026-05-01T07:00:00',updatedAt:'2026-05-28T20:00:00'}]},
+];
 
 function setResFilter(type, btn) {
   currentResFilter = type;
