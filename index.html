@@ -1162,7 +1162,7 @@ textarea{resize:vertical}
   flex-shrink:0;
 }
 .proj-nav-icon{font-size:13px;flex-shrink:0;line-height:1}
-.proj-nav-name{
+.proj-nav-name{color:#e5e7eb!important;
   flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-size:13px;
 }
@@ -1426,7 +1426,7 @@ textarea{resize:vertical}
     <main id="content">
 
       <!-- ─── BRAIN DUMP VIEW ─── -->
-      <div id="view-dump">
+      <div id="view-dump" style="display:block">
         <div class="card">
           <div class="card-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3.5 6.5V17a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z"/></svg>
@@ -2539,7 +2539,7 @@ function nav(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const navEl = document.getElementById('nav-' + page);
   if (navEl) navEl.classList.add('active');
-  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup'].forEach(v => {
+  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup','eisenhower','workspaces'].forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = 'none';
   });
@@ -2574,7 +2574,7 @@ function openProject(id) {
   const navEl = document.getElementById('pnav-' + id);
   if (navEl) navEl.classList.add('active');
 
-  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup'].forEach(v => {
+  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup','eisenhower','workspaces'].forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = 'none';
   });
@@ -4088,6 +4088,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateResTaskSelect();
   checkRecurringDue();
   renderSidebarProjects();
+  nav('dump'); // Set initial view
   // wire all modal overlays
   ['milestone','resource','relation','recurring','workspace'].forEach(type => {
     const overlay = document.getElementById('modal-' + type);
@@ -5199,7 +5200,7 @@ function openResourceDetail(resId) {
   }
 
   // hide all views, show detail
-  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup'].forEach(v => {
+  ['dump','projects','project-detail','review','journal','resources','resource-detail','dashboard','relations','recurring','backup','eisenhower','workspaces'].forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = 'none';
   });
@@ -6094,7 +6095,7 @@ function renderSidebarWorkspaces() {
       item.innerHTML = `
         <span class="proj-color-dot" style="background:${p.color}"></span>
         ${projIcon ? `<span class="proj-nav-icon">${projIcon}</span>` : ''}
-        <span class="proj-nav-name">${p.name}</span>`;
+        <span class="proj-nav-name" style="color:#e5e7eb">${p.name}</span>`;
       itemsEl.appendChild(item);
     });
 
