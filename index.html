@@ -5624,24 +5624,31 @@ setInterval(() => {
     const saved = localStorage.getItem('munjiz-data');
     if (!saved) return;
     const data = JSON.parse(saved);
-    if (!data.projects || !data.savedAt) return;
+    if (!data.savedAt) return;
     const diffDays = (Date.now() - new Date(data.savedAt)) / 86400000;
-    if (diffDays > 30) return; // 30 days
-    const hasCurrentData = Object.values(PROJECTS).some(p => p.tasks.length > 0);
-    if (!hasCurrentData) {
-      Object.assign(PROJECTS, data.projects);
-      if (data.journal?.length) JOURNAL.push(...data.journal);
-      if (data.resources?.length) RESOURCES.push(...data.resources);
-      if (data.relations?.length) RELATIONS.push(...data.relations);
-      if (data.recurring?.length) RECURRING.push(...data.recurring);
-      // Restore workspaces
-      const ws = data.projectGroups || data.workspaces || [];
-      if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
-      // Restore global timebox
-      if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
-    }
-  } catch(e) {}
-  setTimeout(() => { renderSidebarWorkspaces(); }, 0);
+    if (diffDays > 30) return;
+
+    // Always restore — no conditions
+    if (data.projects) Object.assign(PROJECTS, data.projects);
+    if (data.journal?.length) JOURNAL.push(...data.journal);
+    if (data.resources?.length) RESOURCES.push(...data.resources);
+    if (data.relations?.length) RELATIONS.push(...data.relations);
+    if (data.recurring?.length) RECURRING.push(...data.recurring);
+
+    // Restore workspaces — always
+    const ws = data.projectGroups || data.workspaces || [];
+    if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
+
+    // Restore global timebox
+    if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
+
+  } catch(e) { console.warn('Restore failed:', e); }
+
+  // Re-render sidebar after restore
+  setTimeout(() => {
+    renderSidebarWorkspaces();
+    updateDumpCount();
+  }, 0);
 })();
 
 // ══════════════════════════════════════
