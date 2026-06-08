@@ -370,7 +370,7 @@ textarea{resize:vertical}
 .task-table tbody tr:hover td{background:#374151;cursor:pointer}
 .task-table tr.t-done .task-title-cell{text-decoration:line-through;text-decoration-color:#6b7280;color:#6b7280}
 .task-table tr.t-done td{opacity:1;color:#6b7280}
-.task-check-cell{width:40px;text-align:center;padding:8px!important}
+.task-check-cell{width:44px;padding:8px 4px!important;vertical-align:middle}
 .task-title-cell{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-date-cell{font-size:12px;color:#6b7280;direction:ltr;text-align:left;white-space:nowrap}
 .overdue{color:#f87171!important}
@@ -1306,6 +1306,8 @@ textarea{resize:vertical}
   transition:all .15s;font-family:inherit;
 }
 .theme-btn:hover,.theme-btn.active{background:#4b5563;color:#f9fafb;border-color:#6b7280}
+
+.subtask-tr.hidden{display:none!important}
 </style>
 
 <body>
@@ -2703,17 +2705,51 @@ function renderTaskList() {
           const impBadge = (t.importance||'high') === 'high'
             ? '<span style="font-size:10px;color:#fbbf24" title="مهم">⭐</span>'
             : '';
-          return `<tr class="${t.done?'t-done':''}" data-task-id="${t.id}" style="cursor:pointer">
+          const subs = t.subtasks || [];
+          const hasSubs = subs.length > 0;
+          const subsDone = subs.filter(s => s.done).length;
+          const expandBtn = hasSubs
+            ? '<button class="task-expand-btn" id="exp-' + t.id + '" onclick="event.stopPropagation();toggleSubtasks(\'' + t.id + '\')" title="' + subs.length + ' مهمة فرعية"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg></button>'
+            : '<span style="width:18px;display:inline-block"></span>';
+          const subsBadge = hasSubs
+            ? `<span class="subtask-count-badge">${subsDone}/${subs.length}</span>` : '';
+          const mainRow = `<tr class="${t.done?'t-done':''}" data-task-id="${t.id}" style="cursor:pointer">
             <td class="task-check-cell">
-              <div onclick="event.stopPropagation();toggleTask('${t.id}')" style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${t.done?'#10b981':'#3d5a80'};background:${t.done?'#10b981':'#273449'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-                ${t.done?checkSvg:''}
+              <div style="display:flex;align-items:center;justify-content:center;gap:3px">
+                ${expandBtn}
+                <div onclick="event.stopPropagation();toggleTask('${t.id}')" style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${t.done?'#34d399':'#4b5563'};background:${t.done?'#34d399':'#374151'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                  ${t.done?checkSvg:''}
+                </div>
               </div>
             </td>
-            <td class="task-title-cell" onclick="openDetailPanel('${t.id}')">${impBadge} ${t.title}</td>
+            <td class="task-title-cell" onclick="openDetailPanel('${t.id}')">${impBadge} ${t.title} ${subsBadge}</td>
             <td class="task-status-cell"><span class="priority-badge ${p.cls}">${p.label}</span></td>
-            <td class="task-status-cell" style="font-size:12.5px;color:#94a3b8">${t.status||'—'}</td>
+            <td class="task-status-cell" style="font-size:12.5px;color:#9ca3af">${t.status||'—'}</td>
             <td class="task-date-cell${overdue?' overdue':''}">${dateStr||'—'}${overdue?' ⚠':''}</td>
           </tr>`;
+          const subCheckSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
+          const subRows = subs.map((s, si) => {
+            const sDone = s.done || false;
+            const isLast = si === subs.length - 1;
+            return `<tr class="subtask-tr hidden" data-parent="${t.id}" data-sub-id="${s.id||si}">
+              <td class="task-check-cell">
+                <div style="display:flex;align-items:center;justify-content:center;gap:3px">
+                  <span style="width:18px;display:inline-block"></span>
+                  <div onclick="event.stopPropagation();toggleSubtask('${t.id}','${s.id||si}')" style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${sDone?'#34d399':'#4b5563'};background:${sDone?'#34d399':'#374151'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                    ${sDone?subCheckSvg:''}
+                  </div>
+                </div>
+              </td>
+              <td class="task-title-cell">
+                <div style="display:flex;align-items:center;gap:8px;padding-right:28px">
+                  <span style="color:#4b5563;font-size:13px;line-height:1;margin-top:-2px">${isLast?'└':'├'}─</span>
+                  <span style="${sDone?'text-decoration:line-through;color:#6b7280':'color:#d1d5db'};font-size:13px">${s.text||s.title||''}</span>
+                </div>
+              </td>
+              <td></td><td></td><td></td>
+            </tr>`;
+          }).join('');
+          return mainRow + subRows;
         }).join('')}
       </tbody>
     </table>
@@ -4870,6 +4906,37 @@ function deleteCurrentTask() {
 }
 
 // Wire task rows to open panel
+
+function toggleSubtasks(taskId) {
+  const btn = document.getElementById('exp-' + taskId);
+  const rows = document.querySelectorAll('[data-parent="' + taskId + '"]');
+  const isExpanded = btn?.classList.contains('expanded');
+  rows.forEach(r => {
+    r.style.display = isExpanded ? 'none' : '';
+    r.classList.toggle('hidden', isExpanded);
+  });
+  btn?.classList.toggle('expanded', !isExpanded);
+}
+
+function toggleSubtask(taskId, subId) {
+  const proj = PROJECTS[currentProjectId];
+  const task = proj?.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const sub = task.subtasks?.find(s => (s.id || task.subtasks.indexOf(s)) == subId);
+  if (!sub) return;
+  sub.done = !sub.done;
+  autoSaveData();
+  renderTaskList();
+  // Re-expand after re-render
+  setTimeout(() => {
+    const rows = document.querySelectorAll('[data-parent="' + taskId + '"]');
+    if (rows.length) {
+      rows.forEach(r => { r.style.display = ''; r.classList.remove('hidden'); });
+      document.getElementById('exp-' + taskId)?.classList.add('expanded');
+    }
+  }, 0);
+}
+
 function wireTaskRows() { /* handled inline */ }
 
 // wireTaskRows is called from setTaskView after render
