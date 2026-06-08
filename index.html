@@ -898,12 +898,13 @@ textarea{resize:vertical}
 /* Cover image */
 .page-cover{
   position:relative;
-  width:100%;height:180px;
-  background:#1e3a5f;
+  width:100%;height:200px;
+  background:#111827;
   border-radius:12px;
   overflow:hidden;
   margin-bottom:0;
   flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
 }
 .page-cover img{
   width:100%;height:100%;
@@ -950,9 +951,10 @@ textarea{resize:vertical}
 }
 .page-icon img{
   width:100%;height:100%;
-  object-fit:cover;
+  object-fit:contain;
   border-radius:10px;
   display:block;
+  background:#1f2937;
 }
 .page-icon-wrap:hover .page-icon{border-color:#8b5cf6}
 .page-icon img{width:100%;height:100%;object-fit:cover;border-radius:10px}
@@ -6335,7 +6337,7 @@ function applyIcon(iconData) {
   const iconHTML = iconData
     ? (iconData.type === 'emoji'
         ? iconData.value
-        : `<img src="${iconData.value}" alt="icon">`)
+        : `<img src="${iconData.value}" alt="icon" style="max-width:100%;max-height:100%;object-fit:contain">`)
     : '◆';
 
   if (type === 'project') {
@@ -6357,7 +6359,10 @@ function applyIcon(iconData) {
     const r = RESOURCES.find(r => r.id === currentResId);
     if (r) { r.icon = iconData; }
     const el = document.getElementById('res-icon-display');
-    if (el) el.innerHTML = iconHTML;
+    if (el) {
+      el.innerHTML = iconHTML;
+      if (iconData?.type === 'image') { el.style.background='#1f2937'; el.style.padding='4px'; }
+    }
     renderResources();
   } else if (type === 'note') {
     const r = RESOURCES.find(r => r.id === currentResId);
@@ -6490,7 +6495,7 @@ function renderCoverHTML(coverData, wrapId, type) {
 
   const imgContent = coverData.type === 'gradient'
     ? `<div style="width:100%;height:100%;background:${coverData.value}"></div>`
-    : `<img src="${coverData.value}" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    : `<img src="${coverData.value}" style="max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;display:block;background:#111827">`;
 
   wrap.innerHTML = `
     <div class="page-cover" style="margin-bottom:12px">
@@ -6752,7 +6757,9 @@ function renderIconInEl(el, iconData, fallback) {
     return;
   }
   if (typeof iconData === 'object' && iconData.type === 'image') {
-    el.innerHTML = `<img src="${iconData.value}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block">`;
+    el.innerHTML = `<img src="${iconData.value}" style="max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;border-radius:8px;display:block;background:#1f2937">`;
+    el.style.background = '#1f2937';
+    el.style.padding = '4px';
     return;
   }
   el.innerHTML = fallback || '📁';
