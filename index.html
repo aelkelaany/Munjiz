@@ -1429,7 +1429,7 @@ textarea{resize:vertical}
       <div id="view-dump" style="display:block">
         <div class="card">
           <div class="card-header">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3.5 6.5V17a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3.5 6.5V17a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z"/></svg>
             <h2>Brain Dump — فرّغ دماغك</h2>
           </div>
           <textarea id="dump-textarea" placeholder="اكتب أي فكرة، مهمة، قلق، أو حلم — بدون ترتيب..." rows="4"></textarea>
@@ -1523,7 +1523,7 @@ textarea{resize:vertical}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             Time Box
           </button>
-          <div style="margin-right:auto;font-size:13px;color:var(--text-muted)" id="project-detail-meta">5 مهام · 40% مكتمل</div>
+          <div style="margin-right:auto;font-size:13px;color:#6b7280" id="project-detail-meta">5 مهام · 40% مكتمل</div>
         </div>
 
         <!-- LIST VIEW -->
@@ -1545,8 +1545,8 @@ textarea{resize:vertical}
       <!-- ─── WEEKLY REVIEW VIEW ─── -->
       <div id="view-review" style="display:none">
         <div style="margin-bottom:20px">
-          <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">أسبوع 2 يونيو 2026</div>
-          <div style="font-size:20px;font-weight:600;color:var(--text-primary)">المراجعة الأسبوعية</div>
+          <div style="font-size:13px;color:#6b7280;margin-bottom:4px">أسبوع 2 يونيو 2026</div>
+          <div style="font-size:20px;font-weight:600;color:#f9fafb">المراجعة الأسبوعية</div>
         </div>
 
         <div class="review-stats-grid">
@@ -1555,11 +1555,11 @@ textarea{resize:vertical}
             <div class="stat-label">مهام مكتملة</div>
           </div>
           <div class="stat-card">
-            <div class="stat-num" style="color:var(--red)">3</div>
+            <div class="stat-num" style="color:#f87171">3</div>
             <div class="stat-label">مهام متأخرة</div>
           </div>
           <div class="stat-card">
-            <div class="stat-num" style="color:var(--yellow)">40%</div>
+            <div class="stat-num" style="color:#fbbf24">40%</div>
             <div class="stat-label">نسبة الإنجاز</div>
           </div>
         </div>
@@ -1596,8 +1596,8 @@ textarea{resize:vertical}
       <!-- ─── JOURNAL VIEW ─── -->
       <div id="view-journal" style="display:none">
         <div style="margin-bottom:20px">
-          <div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:4px">المذكرة الشخصية</div>
-          <div style="font-size:13px;color:var(--text-muted)">سجّل أفكارك وربطها بمهامك</div>
+          <div style="font-size:20px;font-weight:600;color:#f9fafb;margin-bottom:4px">المذكرة الشخصية</div>
+          <div style="font-size:13px;color:#6b7280">سجّل أفكارك وربطها بمهامك</div>
         </div>
         <div class="journal-new-card">
           <textarea class="journal-textarea" id="journal-input" placeholder="اكتب ما يدور في ذهنك..."></textarea>
@@ -1610,7 +1610,7 @@ textarea{resize:vertical}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               ربط بمهمة
             </button>
-            <span id="journal-linked-task-label" style="font-size:12px;color:var(--accent-text);display:none"></span>
+            <span id="journal-linked-task-label" style="font-size:12px;color:#a78bfa;display:none"></span>
             <button class="btn btn-ghost" onclick="clearJournalForm()" style="font-size:12px;padding:5px 10px">مسح</button>
           </div>
         </div>
@@ -1621,8 +1621,8 @@ textarea{resize:vertical}
       <div id="view-resources" style="display:none">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
           <div>
-            <div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:4px">مصادر التعلم</div>
-            <div style="font-size:13px;color:var(--text-muted)">روابط، كتب، فيديوهات، كورسات</div>
+            <div style="font-size:20px;font-weight:600;color:#f9fafb;margin-bottom:4px">مصادر التعلم</div>
+            <div style="font-size:13px;color:#6b7280">روابط، كتب، فيديوهات، كورسات</div>
           </div>
           <button class="btn btn-accent" style="margin-right:auto" onclick="openModal('resource')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -1871,7 +1871,7 @@ textarea{resize:vertical}
               <div style="display:flex;gap:4px;margin-right:auto">
                 <button class="table-filter-btn" id="nsort-title" onclick="setNotesSort('title')" style="font-size:11.5px;padding:5px 10px">العنوان ↕</button>
                 <button class="table-filter-btn" id="nsort-created" onclick="setNotesSort('createdAt')" style="font-size:11.5px;padding:5px 10px">تاريخ الإنشاء ↕</button>
-                <button class="table-filter-btn" id="nsort-updated" onclick="setNotesSort('updatedAt')" style="font-size:11.5px;padding:5px 10px;background:var(--bg-active);border-color:var(--accent);color:var(--accent-text)">آخر تعديل ↕</button>
+                <button class="table-filter-btn" id="nsort-updated" onclick="setNotesSort('updatedAt')" style="font-size:11.5px;padding:5px 10px;background:#312e81;border-color:#8b5cf6;color:#a78bfa">آخر تعديل ↕</button>
               </div>
             </div>
             <div class="notes-table-wrap">
@@ -2049,7 +2049,7 @@ textarea{resize:vertical}
       <div class="panel-section-label">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6v.01M3 12v.01M3 18v.01"/></svg>
         المهام الفرعية
-        <span id="panel-sub-count" style="font-size:10px;background:var(--bg-elevated);padding:1px 6px;border-radius:10px;color:var(--text-muted)">0</span>
+        <span id="panel-sub-count" style="font-size:10px;background:#374151;padding:1px 6px;border-radius:10px;color:#6b7280">0</span>
       </div>
       <div class="subtask-list" id="panel-subtask-list"></div>
       <div class="add-subtask-row">
@@ -2068,8 +2068,8 @@ textarea{resize:vertical}
         إضافة مرحلة
       </button>
     </div>
-    <div class="panel-section" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
-      <button class="btn" style="color:var(--red);border-color:var(--red);background:none;width:100%;justify-content:center" onclick="deleteCurrentTask()">
+    <div class="panel-section" style="margin-top:24px;padding-top:16px;border-top:1px solid #374151">
+      <button class="btn" style="color:#f87171;border-color:#f87171;background:none;width:100%;justify-content:center" onclick="deleteCurrentTask()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
         حذف المهمة
       </button>
@@ -2244,7 +2244,7 @@ textarea{resize:vertical}
 <div class="modal-overlay" id="modal-card">
   <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-header">
-      <span class="modal-title">مهمة في: <span id="card-col-label" style="color:var(--accent-text)"></span></span>
+      <span class="modal-title">مهمة في: <span id="card-col-label" style="color:#a78bfa"></span></span>
       <button class="modal-close" onclick="closeModal('card')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="form-group">
@@ -2284,13 +2284,13 @@ textarea{resize:vertical}
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" role="dialog" aria-modal="true" style="max-width:380px">
     <div class="modal-header">
-      <span class="modal-title" style="color:var(--red)">تأكيد الحذف</span>
+      <span class="modal-title" style="color:#f87171">تأكيد الحذف</span>
       <button class="modal-close" onclick="closeModal('confirm')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <p id="confirm-msg" style="font-size:14px;color:var(--text-secondary);margin-bottom:4px"></p>
+    <p id="confirm-msg" style="font-size:14px;color:#e5e7eb;margin-bottom:4px"></p>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('confirm')">إلغاء</button>
-      <button class="btn" id="confirm-ok-btn" style="background:var(--red);color:#fff;border-color:var(--red)">حذف</button>
+      <button class="btn" id="confirm-ok-btn" style="background:#ef4444;color:#fff;border-color:#f87171">حذف</button>
     </div>
   </div>
 </div>
@@ -2509,6 +2509,8 @@ textarea{resize:vertical}
 // DATA MODEL — per-project
 // ══════════════════════════════════════
 const PROJECTS = {};
+// Global timebox — shared across all projects
+let TIMEBOX_DATA = {};
 
 const PRIORITY_MAP = {
   urgent:{cls:'p-urgent',label:'عاجل'},
@@ -2664,9 +2666,9 @@ function renderTaskList() {
   const tableHTML = `
   <div class="table-toolbar">
     <input class="table-search" placeholder="بحث في المهام..." oninput="tableFilter.search=this.value;renderTaskList()" value="${tableFilter.search}">
-    <span style="font-size:12px;color:var(--text-muted)">الأولوية:</span>
+    <span style="font-size:12px;color:#6b7280">الأولوية:</span>
     ${priorities.map(p=>`<button class="table-filter-btn${tableFilter.priority===p.v?' active-filter':''}" onclick="tableFilter.priority='${p.v}';renderTaskList()">${p.l}</button>`).join('')}
-    <span style="font-size:12px;color:var(--text-muted);margin-right:4px">الحالة:</span>
+    <span style="font-size:12px;color:#6b7280;margin-right:4px">الحالة:</span>
     ${statusFilters.map(s=>`<button class="table-filter-btn${tableFilter.status===s.v?' active-filter':''}" onclick="tableFilter.status='${s.v}';renderTaskList()">${s.l}</button>`).join('')}
   </div>
   <div class="task-table-wrap">
@@ -2688,7 +2690,7 @@ function renderTaskList() {
         </tr>
       </thead>
       <tbody>
-        ${tasks.length === 0 ? `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">لا توجد مهام مطابقة</td></tr>` :
+        ${tasks.length === 0 ? `<tr><td colspan="5" style="text-align:center;padding:24px;color:#6b7280">لا توجد مهام مطابقة</td></tr>` :
         tasks.map(t => {
           const p = PRIORITY_MAP[t.priority] || PRIORITY_MAP.medium;
           let dateStr = '';
@@ -2785,7 +2787,7 @@ function renderKanban() {
             <div class="kanban-card-footer">
               <span class="priority-badge ${p.cls}">${p.label}</span>
               ${dateStr?`<span class="task-date-txt">${dateStr}</span>`:''}
-              ${subsTotal>0?`<span style="font-size:10px;color:var(--text-muted);margin-right:auto">${subsDone}/${subsTotal}</span>`:''}
+              ${subsTotal>0?`<span style="font-size:10px;color:#6b7280;margin-right:auto">${subsDone}/${subsTotal}</span>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -2971,7 +2973,7 @@ function renderTimebox() {
       const prev=slots2[idx-i];
       const tid=taskAt(dk,prev.h,prev.m);
       if(tid){
-        const task=proj.tasks.find(t=>t.id===tid);
+        const task=allTasks.find(t=>t.id===tid);
         if(task && i < slotsSpan(task)) return tid;
       }
     }
@@ -3012,7 +3014,7 @@ function renderTimebox() {
     const isDrop = !tid && tbSelectedTaskId;
 
     if(tid){
-      const task = proj.tasks.find(t=>t.id===tid);
+      const task = allTasks.find(t=>t.id===tid);
       if(!task) return `<div class="tb-cell${isToday?' today-cell':''}"></div>`;
       const span = Math.min(slotsSpan(task), slots.length - slots.findIndex(s=>s.h===h&&s.m===m));
       const slotH = tbSlotMin===60?44:tbSlotMin===30?44:36;
@@ -3049,14 +3051,14 @@ function renderTimebox() {
         <button class="tb-btn" onclick="tbGoToday()" style="font-size:11px;padding:4px 10px">اليوم</button>
       </div>
       <div class="tb-hour-range">
-        <label style="font-size:11px;color:var(--text-muted)">حجم النافذة:</label>
-        <select style="padding:4px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px"
+        <label style="font-size:11px;color:#6b7280">حجم النافذة:</label>
+        <select style="padding:4px 8px;background:#374151;border:1px solid #374151;border-radius:var(--radius-sm);color:#f9fafb;font-size:12px"
           onchange="tbSlotMin=+this.value;renderTimebox()">${slotOpts}</select>
-        <label style="font-size:11px;color:var(--text-muted);margin-right:8px">من:</label>
-        <select style="padding:4px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px"
+        <label style="font-size:11px;color:#6b7280;margin-right:8px">من:</label>
+        <select style="padding:4px 8px;background:#374151;border:1px solid #374151;border-radius:var(--radius-sm);color:#f9fafb;font-size:12px"
           onchange="tbHourStart=+this.value;renderTimebox()">${hourOpts(tbHourStart)}</select>
-        <label style="font-size:11px;color:var(--text-muted)">إلى:</label>
-        <select style="padding:4px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px"
+        <label style="font-size:11px;color:#6b7280">إلى:</label>
+        <select style="padding:4px 8px;background:#374151;border:1px solid #374151;border-radius:var(--radius-sm);color:#f9fafb;font-size:12px"
           onchange="tbHourEnd=+this.value;renderTimebox()">${hourOpts(tbHourEnd)}</select>
       </div>
     </div>`;
@@ -3066,7 +3068,7 @@ function renderTimebox() {
     <div class="tb-unscheduled">
       <h3>غير مجدولة (${unscheduled.length})</h3>
       ${unscheduled.length===0
-        ? '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0">كل المهام مجدولة ✓</div>'
+        ? '<div style="font-size:11px;color:#6b7280;text-align:center;padding:8px 0">كل المهام مجدولة ✓</div>'
         : unscheduled.map(t=>{
             const p=PRIORITY_MAP[t.priority]||PRIORITY_MAP.medium;
             const sel=tbSelectedTaskId===t.id;
@@ -3077,12 +3079,12 @@ function renderTimebox() {
               <div style="font-size:9px;color:${projColor};margin-bottom:2px">${projName}</div>
               <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
                 <span class="priority-badge ${p.cls}" style="font-size:10px;padding:1px 5px">${p.label}</span>
-                <span style="font-size:10px;color:var(--text-muted)">${dur} د</span>
+                <span style="font-size:10px;color:#6b7280">${dur} د</span>
               </div>
               <div style="font-size:12px;line-height:1.4">${t.title.length>22?t.title.slice(0,22)+'…':t.title}</div>
             </div>`;
           }).join('')}
-      ${unscheduled.length>0?`<div style="font-size:10.5px;color:var(--text-muted);margin-top:10px;line-height:1.7;border-top:1px solid var(--border);padding-top:8px">① اختر مهمة<br>② اضغط على الوقت المناسب<br>المهمة ستغطي مدتها تلقائياً</div>`:''}
+      ${unscheduled.length>0?`<div style="font-size:10.5px;color:#6b7280;margin-top:10px;line-height:1.7;border-top:1px solid #374151;padding-top:8px">① اختر مهمة<br>② اضغط على الوقت المناسب<br>المهمة ستغطي مدتها تلقائياً</div>`:''}
     </div>`;
 
   // build grid
@@ -3185,9 +3187,9 @@ let tbPopupTaskId = null;
 let tbPopupDk = null;
 
 function openTbPopup(taskId, dk) {
-  const proj = PROJECTS[currentProjectId];
-  const task = proj.tasks.find(t => t.id === taskId);
+  const task = Object.values(PROJECTS).flatMap(p=>p.tasks).find(t => t.id === taskId);
   if (!task) return;
+  const proj = Object.values(PROJECTS).find(p => p.tasks.some(t => t.id === taskId));
   tbPopupTaskId = taskId;
   tbPopupDk = dk;
 
@@ -3200,7 +3202,7 @@ function openTbPopup(taskId, dk) {
     `<span class="priority-badge ${p.cls}">${p.label}</span>
      <span>${dur} دقيقة</span>
      ${dateStr ? `<span>${dateStr}</span>` : ''}
-     ${task.done ? '<span style="color:var(--accent-text)">✓ مكتملة</span>' : ''}`;
+     ${task.done ? '<span style="color:#a78bfa">✓ مكتملة</span>' : ''}`;
 
   const doneBtn = document.getElementById('tb-popup-done-btn');
   const doneLabel = document.getElementById('tb-popup-done-label');
@@ -3220,8 +3222,7 @@ function closeTbPopup(e) {
 }
 
 function tbPopupToggleDone() {
-  const proj = PROJECTS[currentProjectId];
-  const task = proj.tasks.find(t => t.id === tbPopupTaskId);
+  const task = Object.values(PROJECTS).flatMap(p=>p.tasks).find(t => t.id === tbPopupTaskId);
   if (!task) return;
   task.done = !task.done;
   document.getElementById('tb-popup-overlay').style.display = 'none';
@@ -3781,6 +3782,8 @@ function exportJSON() {
     resources: RESOURCES,
     relations: RELATIONS,
     recurring: RECURRING,
+    projectGroups: WORKSPACES,
+    timeboxData: TIMEBOX_DATA,
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], {type:'application/json'});
@@ -4078,12 +4081,32 @@ function refreshSidebarProjects() {
 
 // Init — render first project list on load
 document.addEventListener('DOMContentLoaded', () => {
+  // ── Restore from localStorage (all vars defined by now) ──
+  try {
+    const saved = localStorage.getItem('munjiz-data');
+    if (saved) {
+      const data = JSON.parse(saved);
+      const diffDays = (Date.now() - new Date(data.savedAt || 0)) / 86400000;
+      if (diffDays <= 30) {
+        if (data.projects) Object.assign(PROJECTS, data.projects);
+        if (data.journal?.length) JOURNAL.push(...data.journal);
+        if (data.resources?.length) RESOURCES.push(...data.resources);
+        if (data.relations?.length) RELATIONS.push(...data.relations);
+        if (data.recurring?.length) RECURRING.push(...data.recurring);
+        const ws = data.projectGroups || data.workspaces || [];
+        if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
+        if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
+      }
+    }
+  } catch(e) { console.warn('Restore failed:', e); }
+  // ── Init UI ──
   renderTaskList();
   updateProjectMeta();
   renderJournalEntries();
   renderResources();
   populateResTaskSelect();
   checkRecurringDue();
+  renderSidebarWorkspaces();
   renderSidebarProjects();
   nav('dump'); // Set initial view
   // wire all modal overlays
@@ -4098,9 +4121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════
 let RELATIONS = [];
 let RECURRING = [];
-// Global timebox — shared across all projects
-// key: "YYYY-MM-DD_H_M", value: taskId
-let TIMEBOX_DATA = {};
+
+
 
 // ══════════════════════════════════════
 // EISENHOWER MATRIX
@@ -4888,7 +4910,7 @@ function openJTaskPicker() {
   );
   list.innerHTML = allTasks.map(t => `
     <div class="jtask-item" onclick="linkJournalTask('${t.id}','${t.title.replace(/'/g,"\'")}')">
-      <span style="font-size:11px;color:var(--text-muted);margin-left:6px">${t.projectName}</span>
+      <span style="font-size:11px;color:#6b7280;margin-left:6px">${t.projectName}</span>
       ${t.title}
     </div>`).join('');
   const popup = document.getElementById('jtask-popup');
@@ -4914,7 +4936,7 @@ function renderJournalEntries() {
   const list = document.getElementById('journal-entries-list');
   if (!list) return;
   if (JOURNAL.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px">لا توجد تدوينات بعد — ابدأ الكتابة! ✍️</div>';
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280;font-size:13px">لا توجد تدوينات بعد — ابدأ الكتابة! ✍️</div>';
     return;
   }
   const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -4969,7 +4991,7 @@ function renderResources() {
   const filtered = currentResFilter === 'all' ? RESOURCES : RESOURCES.filter(r=>r.type===currentResFilter);
   const typeLabels = {link:'🔗 رابط',book:'📚 كتاب',video:'🎥 فيديو',course:'🎓 كورس',note:'📝 ملاحظة'};
   const typeClass = {link:'rt-link',book:'rt-book',video:'rt-video',course:'rt-course',note:'rt-note'};
-  const statusColors = {'لم أبدأ':'color:var(--text-muted)','قيد الدراسة':'color:var(--yellow)','مكتمل':'color:var(--accent-text)'};
+  const statusColors = {'لم أبدأ':'color:#6b7280','قيد الدراسة':'color:#fbbf24','مكتمل':'color:#a78bfa'};
 
   grid.innerHTML = filtered.map(r => {
     const linkedTask = r.taskId ? Object.values(PROJECTS).flatMap(p=>p.tasks).find(t=>t.id===r.taskId) : null;
@@ -4981,14 +5003,14 @@ function renderResources() {
       <div style="font-size:12px;${statusColors[r.status]||''}">${r.status}</div>
       ${linkedTask?`<div class="resource-linked-task">← ${linkedTask.title}</div>`:''}
       ${r.notes?`<div style="margin-top:4px">
-        <button onclick="toggleResNotes('${r.id}')" style="font-size:11px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:2px 0">
+        <button onclick="toggleResNotes('${r.id}')" style="font-size:11px;color:#6b7280;background:none;border:none;cursor:pointer;padding:2px 0">
           📝 <span id="rn-label-${r.id}">عرض الملاحظات</span>
         </button>
-        <div id="rn-${r.id}" style="display:none;margin-top:8px;padding:10px 12px;background:var(--bg-elevated);border-radius:var(--radius-md);font-size:12.5px;color:var(--text-secondary);line-height:1.8;white-space:pre-wrap;direction:auto">${r.notes}</div>
+        <div id="rn-${r.id}" style="display:none;margin-top:8px;padding:10px 12px;background:#374151;border-radius:var(--radius-md);font-size:12.5px;color:#e5e7eb;line-height:1.8;white-space:pre-wrap;direction:auto">${r.notes}</div>
       </div>`:''}
       <div class="resource-actions">
         <button class="res-del-btn" onclick="event.stopPropagation();deleteResource('${r.id}')">حذف</button>
-        <select style="font-size:11px;padding:2px 6px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);cursor:pointer"
+        <select style="font-size:11px;padding:2px 6px;background:#374151;border:1px solid #374151;border-radius:var(--radius-sm);color:#f9fafb;cursor:pointer"
           onchange="updateResStatus('${r.id}',this.value)">
           <option${r.status==='لم أبدأ'?' selected':''}>لم أبدأ</option>
           <option${r.status==='قيد الدراسة'?' selected':''}>قيد الدراسة</option>
@@ -5119,14 +5141,14 @@ function renderNotesList() {
   const trashSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
 
   if (notes.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">لا توجد نوتس — اضغط إضافة نوت جديدة</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#6b7280">لا توجد نوتس — اضغط إضافة نوت جديدة</td></tr>';
     return;
   }
 
   tbody.innerHTML = notes.map(n => `
     <tr onclick="openNote('${n.id}')">
       <td class="note-title-cell">${n.title}</td>
-      <td class="note-summary-cell">${stripHtml(n.content) || '<span style="color:var(--text-muted);font-style:italic">فارغة</span>'}</td>
+      <td class="note-summary-cell">${stripHtml(n.content) || '<span style="color:#6b7280;font-style:italic">فارغة</span>'}</td>
       <td class="note-date-cell">${fmtNoteDate(n.createdAt)}</td>
       <td class="note-date-cell">${fmtNoteDate(n.updatedAt)}</td>
       <td class="note-actions-cell">
@@ -5359,10 +5381,10 @@ function showLinkTooltip(anchor, e) {
   if (linkTooltip) { linkTooltip.remove(); linkTooltip = null; }
 
   const tip = document.createElement('div');
-  tip.style.cssText = 'position:fixed;z-index:800;background:var(--bg-elevated);border:1px solid var(--border-hover);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);font-size:12.5px;max-width:320px;';
+  tip.style.cssText = 'position:fixed;z-index:800;background:#374151;border:1px solid var(--border-hover);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);font-size:12.5px;max-width:320px;';
 
   const urlText = document.createElement('span');
-  urlText.style.cssText = 'color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;direction:ltr;';
+  urlText.style.cssText = 'color:#60a5fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;direction:ltr;';
   urlText.textContent = anchor.href;
 
   const openBtn = document.createElement('button');
@@ -5372,7 +5394,7 @@ function showLinkTooltip(anchor, e) {
 
   const unlinkBtn = document.createElement('button');
   unlinkBtn.textContent = 'إزالة';
-  unlinkBtn.style.cssText = 'padding:3px 10px;background:none;color:var(--red);border:1px solid var(--red);border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0;';
+  unlinkBtn.style.cssText = 'padding:3px 10px;background:none;color:#f87171;border:1px solid var(--red);border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0;';
   unlinkBtn.onclick = () => {
     anchor.replaceWith(document.createTextNode(anchor.textContent));
     tip.remove(); linkTooltip = null;
@@ -5416,9 +5438,9 @@ function createInlineDialog(id, title, fields, confirmFn) {
   overlay.id = id;
   overlay.style.cssText = 'position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6)';
   var box = document.createElement('div');
-  box.style.cssText = 'background:var(--bg-elevated);border:1px solid var(--border-hover);border-radius:14px;padding:20px;width:380px;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  box.style.cssText = 'background:#374151;border:1px solid var(--border-hover);border-radius:14px;padding:20px;width:380px;box-shadow:0 8px 32px rgba(0,0,0,.6)';
   var titleEl = document.createElement('div');
-  titleEl.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px';
+  titleEl.style.cssText = 'font-size:14px;font-weight:600;color:#f9fafb;margin-bottom:14px';
   titleEl.textContent = title;
   box.appendChild(titleEl);
   fields.forEach(function(f) {
@@ -5426,7 +5448,7 @@ function createInlineDialog(id, title, fields, confirmFn) {
     inp.id = f.id; inp.type = f.type || 'text';
     inp.placeholder = f.placeholder || '';
     if (f.dir) inp.dir = f.dir;
-    inp.style.cssText = 'width:100%;padding:8px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;margin-bottom:8px;display:block;box-sizing:border-box';
+    inp.style.cssText = 'width:100%;padding:8px 12px;background:#111827;border:1px solid #374151;border-radius:8px;color:#f9fafb;font-size:13px;margin-bottom:8px;display:block;box-sizing:border-box';
     inp.addEventListener('keydown', function(e){ if(e.key==='Enter') window[confirmFn](); if(e.key==='Escape') overlay.remove(); });
     box.appendChild(inp);
   });
@@ -5434,7 +5456,7 @@ function createInlineDialog(id, title, fields, confirmFn) {
   btns.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-top:4px';
   var cancelBtn = document.createElement('button');
   cancelBtn.textContent = 'إلغاء';
-  cancelBtn.style.cssText = 'padding:7px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;font-size:13px';
+  cancelBtn.style.cssText = 'padding:7px 16px;background:none;border:1px solid #374151;border-radius:8px;color:#e5e7eb;cursor:pointer;font-size:13px';
   cancelBtn.onclick = function(){ overlay.remove(); };
   var okBtn = document.createElement('button');
   okBtn.textContent = 'إضافة';
@@ -5528,7 +5550,7 @@ function renderResLinkedTasks() {
   ).filter(Boolean);
 
   if (tasks.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:4px 0">لا توجد مهام مرتبطة</div>';
+    container.innerHTML = '<div style="font-size:12px;color:#6b7280;padding:4px 0">لا توجد مهام مرتبطة</div>';
     return;
   }
   container.innerHTML = tasks.map(t => {
@@ -5536,8 +5558,8 @@ function renderResLinkedTasks() {
     return `<div class="res-linked-task-row">
       <span class="priority-badge ${p.cls}" style="font-size:10px">${p.label}</span>
       <span style="flex:1;font-size:13px">${t.title}</span>
-      <span style="font-size:11px;color:var(--text-muted)">${t.projectName}</span>
-      <button onclick="unlinkResTask('${t.id}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px 6px" title="إزالة الربط">×</button>
+      <span style="font-size:11px;color:#6b7280">${t.projectName}</span>
+      <button onclick="unlinkResTask('${t.id}')" style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:12px;padding:2px 6px" title="إزالة الربط">×</button>
     </div>`;
   }).join('');
 }
@@ -5601,55 +5623,11 @@ const _navHideList = ['dump','projects','project-detail','review','journal','res
   if (link) link.href = url;
 })();
 
-// Auto-save reminder every 10 min
-setInterval(() => {
-  const hasData = Object.values(PROJECTS).some(p => p.tasks.length > 0);
-  if (hasData) {
-    const saved = localStorage.getItem('warrad-autosave-time');
-    const now = Date.now();
-    if (!saved || now - parseInt(saved) > 600000) {
-      // Auto-save to localStorage
-      try {
-        const data = {projects:PROJECTS,journal:JOURNAL,resources:RESOURCES,relations:RELATIONS,recurring:RECURRING,savedAt:new Date().toISOString()};
-        localStorage.setItem('munjiz-data', JSON.stringify(data));
-        localStorage.setItem('warrad-autosave-time', String(now));
-      } catch(e) {}
-    }
-  }
-}, 60000);
+// Auto-save every minute
+setInterval(() => { autoSaveData(); }, 60000);
 
 // Restore from localStorage on load
-(function restoreFromLocalStorage() {
-  try {
-    const saved = localStorage.getItem('munjiz-data');
-    if (!saved) return;
-    const data = JSON.parse(saved);
-    if (!data.savedAt) return;
-    const diffDays = (Date.now() - new Date(data.savedAt)) / 86400000;
-    if (diffDays > 30) return;
 
-    // Always restore — no conditions
-    if (data.projects) Object.assign(PROJECTS, data.projects);
-    if (data.journal?.length) JOURNAL.push(...data.journal);
-    if (data.resources?.length) RESOURCES.push(...data.resources);
-    if (data.relations?.length) RELATIONS.push(...data.relations);
-    if (data.recurring?.length) RECURRING.push(...data.recurring);
-
-    // Restore workspaces — always
-    const ws = data.projectGroups || data.workspaces || [];
-    if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
-
-    // Restore global timebox
-    if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
-
-  } catch(e) { console.warn('Restore failed:', e); }
-
-  // Re-render sidebar after restore
-  setTimeout(() => {
-    renderSidebarWorkspaces();
-    updateDumpCount();
-  }, 0);
-})();
 
 // ══════════════════════════════════════
 // COVER + ICON SYSTEM
