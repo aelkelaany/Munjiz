@@ -2252,9 +2252,6 @@ tr:hover .task-row-actions{opacity:1}
     <div class="form-group">
       <label class="form-label">المشروع</label>
       <select class="form-select" id="t-project">
-        <option value="p1">العمل — MEWA</option>
-        <option value="p2">التعلم الذاتي</option>
-        <option value="p3">الأسرة والبيت</option>
       </select>
     </div>
     <div class="form-row">
@@ -2570,11 +2567,7 @@ tr:hover .task-row-actions{opacity:1}
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">المشروع</label>
-        <select class="form-select" id="rec-project">
-          <option value="p1">العمل — MEWA</option>
-          <option value="p2">التعلم الذاتي</option>
-          <option value="p3">الأسرة والبيت</option>
-        </select>
+        <select class="form-select" id="rec-project"></select>
       </div>
       <div class="form-group"><label class="form-label">تاريخ البداية</label>
         <input type="date" class="form-input" id="rec-start">
@@ -3577,20 +3570,32 @@ function saveTask() {
   if (!PROJECTS[projId]) return;
   const duration = parseInt(document.getElementById('t-duration')?.value) || 60;
   const importance = document.getElementById('t-importance')?.value || 'high';
+  const notes = document.getElementById('t-notes')?.value?.trim() || '';
   PROJECTS[projId].tasks.push({
     id: 't' + Date.now(),
     title, priority, importance, date, done: false,
     status: PROJECTS[projId].kanban[0]?.name || 'للبدء',
-    duration
+    duration,
+    notes,
+    subtasks: [],
   });
 
   document.getElementById('t-title').value = '';
-  document.getElementById('t-notes').value = '';
+  const notesEl = document.getElementById('t-notes');
+  if (notesEl) notesEl.value = '';
   closeModal('task');
 
+  // Always update sidebar (badge count)
+  updateProjectMeta();
+  autoSaveData();
+  // Update current view if same project
   if (projId === currentProjectId) {
     if (currentTaskView === 'list') { renderTaskList(); setTimeout(wireTaskRows, 0); }
     if (currentTaskView === 'kanban') renderKanban();
+    if (document.getElementById('view-dashboard')?.style.display !== 'none') renderDashboard();
+  } else {
+    // Navigate to the project where task was added
+    openProject(projId);
   }
   showToast('تمت إضافة المهمة ✓');
 }
@@ -3991,13 +3996,55 @@ document.addEventListener('click', e => {
 // ══════════════════════════════════════
 const ALL_MODALS = ['task','project','col','card','confirm'];
 
+function populateRecurringProjectSelect() {
+  const sel = document.getElementById('rec-project');
+  if (!sel) return;
+  sel.innerHTML = Object.values(PROJECTS).map(p =>
+    `<option value="${p.id}">${p.name}</option>`
+  ).join('');
+  if (currentProjectId && PROJECTS[currentProjectId]) sel.value = currentProjectId;
+}
+
 function openModal(type) {
   const overlay = document.getElementById('modal-' + type);
   if (!overlay) return;
+
+  // Populate task project select dynamically
+  if (type === 'task') {
+    const sel = document.getElementById('t-project');
+    if (sel) {
+      sel.innerHTML = Object.values(PROJECTS).map(p =>
+        `<option value="${p.id}">${p.name}</option>`
+      ).join('');
+      // Preselect current project
+      if (currentProjectId && PROJECTS[currentProjectId]) {
+        sel.value = currentProjectId;
+      }
+    }
+    // Reset form fields
+    document.getElementById('t-title').value = '';
+    const notes = document.getElementById('t-notes');
+    if (notes) notes.value = '';
+  }
+
+  // Populate workspace select for project modal
+  if (type === 'recurring') {
+    populateRecurringProjectSelect();
+  }
+  if (type === 'project') {
+    updateProjectModalWorkspaces();
+    const sel = document.getElementById('p-group');
+    // Preselect workspace of current project
+    if (sel && currentProjectId) {
+      const ws = WORKSPACES.find(w => w.projectIds.includes(currentProjectId));
+      if (ws) sel.value = ws.id;
+    }
+  }
+
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   setTimeout(() => {
-    const input = overlay.querySelector('input:not([type=date])');
+    const input = overlay.querySelector('input:not([type=date]):not([type=range])');
     if (input) input.focus();
   }, 60);
 }
