@@ -2829,8 +2829,9 @@ function renderTaskList() {
   const checkSvg = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // filter
+  // All tasks — archived ones go to separate section
   let tasks = proj.tasks.filter(t => {
+    if (t.archived) return false; // Only archived tasks are hidden
     if (tableFilter.priority !== 'all' && t.priority !== tableFilter.priority) return false;
     if (tableFilter.status !== 'all') {
       if (tableFilter.status === 'done' && !t.done) return false;
@@ -2940,6 +2941,9 @@ function renderTaskList() {
             <td class="task-title-cell">
               <span onclick="openDetailPanel('${t.id}')" ondblclick="event.stopPropagation();inlineEditTask('${t.id}',this)" class="task-title-span" title="اضغط للتفاصيل — اضغط مرتين للتعديل">${impBadge} ${t.title} ${subsBadge}</span>
               <span class="task-row-actions">
+                <button onclick="event.stopPropagation();archiveTask('${t.id}')" class="task-row-btn" title="أرشفة المهمة" style="color:#6b7280">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                </button>
                 <button onclick="event.stopPropagation();duplicateTask('${t.id}')" class="task-row-btn" title="نسخ المهمة">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
@@ -2986,6 +2990,78 @@ function renderTaskList() {
 
   container.innerHTML = tableHTML;
   updateProjectMeta();
+
+  // Inject archive rows after render
+  const tbody = container.querySelector('tbody');
+  if (tbody) {
+    const doneTasks = (proj.tasks||[]).filter(t => t.archived);
+    if (doneTasks.length > 0) {
+      const archHtml = buildArchiveRows(doneTasks, tableFilter);
+      tbody.insertAdjacentHTML('beforeend', archHtml);
+    }
+  }
+
+  // Update archive button
+  const archBtn = document.getElementById('archive-toggle-btn');
+  if (archBtn) {
+    const n = (proj.tasks||[]).filter(t=>t.done).length;
+    const archSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> `;
+    archBtn.innerHTML = archSvg + (tableFilter.showArchive ? 'إخفاء الأرشيف' : `الأرشيف (${n})`);
+    archBtn.style.color = tableFilter.showArchive ? '#a78bfa' : '';
+    archBtn.style.borderColor = tableFilter.showArchive ? '#8b5cf6' : '';
+    archBtn.style.background = tableFilter.showArchive ? 'rgba(139,92,246,.1)' : '';
+  }
+}
+
+function buildArchiveRows(doneTasks, filter) {
+  const n = doneTasks.length;
+  const arrow = filter.showArchive ? '▼' : '▶';
+  const doneCheckSvg = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
+
+  let html = `<tr>
+    <td colspan="5" style="padding:0;border-top:1px solid #374151">
+      <div class="archive-section-header" onclick="tableFilter.showArchive=!tableFilter.showArchive;renderTaskList()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        الأرشيف &mdash; ${n} مهمة مؤرشفة
+        <span style="margin-right:auto;font-size:10px">${arrow}</span>
+      </div>
+    </td>
+  </tr>`;
+
+  if (!filter.showArchive) return html;
+
+  doneTasks.forEach(t => {
+    const p = PRIORITY_MAP[t.priority] || PRIORITY_MAP.medium;
+    const d = t.date ? new Date(t.date).toLocaleDateString('ar-SA',{day:'numeric',month:'short'}) : '';
+    const subs = t.subtasks || [];
+    const sb = subs.length ? `<span class="subtask-count-badge" style="opacity:.5">${subs.filter(s=>s.done).length}/${subs.length}</span>` : '';
+    html += `<tr class="t-done archived-row" data-task-id="${t.id}">
+      <td class="task-check-cell">
+        <div style="display:flex;align-items:center;justify-content:center">
+          <div onclick="event.stopPropagation();unarchiveTask('${t.id}')" title="إرجاع للقائمة"
+            style="width:18px;height:18px;border-radius:5px;border:1.5px solid #34d399;background:#34d399;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+            ${doneCheckSvg}
+          </div>
+        </div>
+      </td>
+      <td class="task-title-cell">
+        <span onclick="openDetailPanel('${t.id}')" class="task-title-span" style="text-decoration:line-through;color:#6b7280">${t.title} ${sb}</span>
+        <span class="task-row-actions">
+          <button onclick="event.stopPropagation();duplicateTask('${t.id}')" class="task-row-btn" title="نسخ">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();deleteTaskById('${t.id}')" class="task-row-btn task-row-del" title="حذف نهائي">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </span>
+      </td>
+      <td><span class="priority-badge ${p.cls}" style="opacity:.4">${p.label}</span></td>
+      <td style="color:#4b5563;font-size:12px">${t.status||'—'}</td>
+      <td style="color:#4b5563">${d||'—'}</td>
+    </tr>`;
+  });
+
+  return html;
 }
 
 function sortTable(col) {
@@ -3645,8 +3721,15 @@ function convertToTask(id, text) {
 
 function updateDumpCount() {
   const count = document.querySelectorAll('.inbox-item').length;
-  document.getElementById('inbox-badge').textContent = count;
-  document.getElementById('dump-hint').textContent = count + ' أفكار في الصندوق';
+  const badge = document.getElementById('inbox-badge');
+  if (badge) badge.textContent = count;
+  const hint = document.getElementById('dump-hint');
+  if (hint) hint.textContent = count + ' أفكار في الصندوق';
+  const navBadge = document.getElementById('dump-badge');
+  if (navBadge) {
+    navBadge.textContent = count;
+    navBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
 }
 
 // ══════════════════════════════════════
@@ -4108,6 +4191,26 @@ document.querySelectorAll('.nav-item[role="button"]').forEach(el => {
 // ══════════════════════════════════════
 // AUTO SAVE
 // ══════════════════════════════════════
+
+// ══════════════════════════════════════
+// MISSING FUNCTIONS (referenced but not defined)
+// ══════════════════════════════════════
+
+function showPanelSaved() {
+  const ind = document.getElementById('panel-saved-ind');
+  if (!ind) return;
+  ind.style.opacity = '1';
+  clearTimeout(window._panelSaveTimer);
+  window._panelSaveTimer = setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+}
+
+function openProjectModalInWorkspace(wsId) {
+  updateProjectModalWorkspaces();
+  const sel = document.getElementById('p-group');
+  if (sel) sel.value = wsId;
+  openModal('project');
+}
+
 function autoSaveData() {
   try {
     const data = {
@@ -5476,6 +5579,32 @@ function duplicateTask(taskId) {
   renderKanban();
   autoSaveData();
   showToast('تم نسخ المهمة ✓');
+}
+
+
+function archiveTask(taskId) {
+  const proj = PROJECTS[currentProjectId];
+  const task = proj?.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.archived = true;
+  if (currentPanelTaskId === taskId) closeDetailPanel();
+  renderTaskList();
+  autoSaveData();
+  showToast('تم أرشفة المهمة 📦');
+}
+
+function unarchiveTask(taskId) {
+  const allProjects = Object.values(PROJECTS);
+  let task = null;
+  for (const p of allProjects) {
+    task = p.tasks.find(t => t.id === taskId);
+    if (task) break;
+  }
+  if (!task) return;
+  task.archived = false;
+  renderTaskList();
+  autoSaveData();
+  showToast('تم إرجاع المهمة للقائمة ✓');
 }
 
 function deleteTaskById(taskId) {
