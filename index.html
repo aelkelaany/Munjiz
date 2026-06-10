@@ -3710,8 +3710,6 @@ function addDump() {
 function deleteDump(id) {
   const el = document.querySelector(`.inbox-item[data-id="${id}"]`);
   if (el) el.remove();
-  DUMP_ITEMS = DUMP_ITEMS.filter(d => d.id !== id);
-  autoSaveData();
   updateDumpCount();
 }
 
@@ -4223,7 +4221,6 @@ function autoSaveData() {
       recurring: RECURRING,
       projectGroups: WORKSPACES,
       timeboxData: TIMEBOX_DATA,
-      dumpItems: DUMP_ITEMS,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem('munjiz-data', JSON.stringify(data));
@@ -4558,9 +4555,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const ws = data.projectGroups || data.workspaces || [];
         if (ws.length) WORKSPACES.splice(0, WORKSPACES.length, ...ws);
         if (data.timeboxData) Object.assign(TIMEBOX_DATA, data.timeboxData);
-        if (data.dumpItems?.length) {
-          DUMP_ITEMS.splice(0, DUMP_ITEMS.length, ...data.dumpItems);
-        }
       }
     }
   } catch(e) { console.warn('Restore failed:', e); }
@@ -4573,7 +4567,6 @@ document.addEventListener('DOMContentLoaded', () => {
   checkRecurringDue();
   renderSidebarWorkspaces();
   renderSidebarProjects();
-  renderAllDumpItems();
   nav('dump'); // Set initial view
   initNotifications();
   // wire all modal overlays
