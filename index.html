@@ -2312,7 +2312,7 @@ tr:hover .task-row-actions{opacity:1}
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('task')">إلغاء</button>
-      <button class="btn btn-accent" onclick="saveTask()">
+      <button class="btn btn-accent" id="task-save-btn" onclick="saveTask()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
         حفظ المهمة
       </button>
@@ -2651,6 +2651,8 @@ tr:hover .task-row-actions{opacity:1}
 const PROJECTS = {};
 // Global timebox — shared across all projects
 let TIMEBOX_DATA = {};
+// Brain Dump items — persisted to localStorage
+let DUMP_ITEMS = [];
 
 const PRIORITY_MAP = {
   urgent:{cls:'p-urgent',label:'عاجل'},
@@ -3172,6 +3174,7 @@ function confirmAddCard() {
   closeModal('card');
   renderKanban();
   updateProjectMeta();
+  if (_pendingDumpId) { deleteDump(_pendingDumpId); _pendingDumpId = null; }
   showToast('تمت إضافة المهمة ✓');
 }
 
@@ -3679,34 +3682,58 @@ function saveTask() {
 // ══════════════════════════════════════
 // BRAIN DUMP
 // ══════════════════════════════════════
+
+// ══════════════════════════════════════
+// BRAIN DUMP PERSISTENCE
+// ══════════════════════════════════════
+function renderDumpItem(item, prepend) {
+  const list = document.getElementById('inbox-list');
+  if (!list) return;
+  const el = document.createElement('div');
+  el.className = 'inbox-item';
+  el.dataset.id = item.id;
+  const timeStr = item.createdAt
+    ? new Date(item.createdAt).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})
+    : 'الآن';
+  // Use data attribute to avoid quote escaping issues
+  el.innerHTML = `<span class="inbox-dot"></span>
+    <span class="inbox-text">${item.text||''}</span>
+    <span class="inbox-time">${timeStr}</span>
+    <div class="inbox-actions">
+      <button class="mini-btn convert" title="حول لمهمة" data-dump-id="${item.id}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="mini-btn del" title="احذف" data-dump-id="${item.id}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>`;
+  // Wire buttons with data attributes (avoids quote escaping)
+  el.querySelector('.convert').addEventListener('click', () => convertToTask(item.id, item.text));
+  el.querySelector('.del').addEventListener('click', () => deleteDump(item.id));
+  if (prepend) list.prepend(el);
+  else list.appendChild(el);
+}
+
+function renderAllDumpItems() {
+  const list = document.getElementById('inbox-list');
+  if (!list) return;
+  list.innerHTML = '';
+  DUMP_ITEMS.forEach(item => renderDumpItem(item, false));
+  updateDumpCount();
+}
+
 function addDump() {
   const ta = document.getElementById('dump-textarea');
   const text = ta.value.trim();
   if (!text) return;
-
-  const id = 'd' + Date.now();
-  const item = document.createElement('div');
-  item.className = 'inbox-item';
-  item.dataset.id = id;
-
-  const arrowSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
-  const xSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
-
-  const safeText = text.replace(/'/g, "\'").replace(/"/g, '&quot;');
-  item.innerHTML = `<span class="inbox-dot"></span>
-    <span class="inbox-text">${text}</span>
-    <span class="inbox-time">الآن</span>
-    <div class="inbox-actions">
-      <button class="mini-btn convert" title="حول لمهمة" onclick="convertToTask('${id}','${safeText}')">${arrowSvg}</button>
-      <button class="mini-btn del" title="احذف" onclick="deleteDump('${id}')">${xSvg}</button>
-    </div>`;
-
-  document.getElementById('inbox-list').prepend(item);
+  const item = {id: 'd' + Date.now(), text, createdAt: new Date().toISOString()};
+  DUMP_ITEMS.unshift(item);
+  renderDumpItem(item, true);
   ta.value = '';
+  autoSaveData();
   updateDumpCount();
   showToast('تمت الإضافة للصندوق ✓');
 }
-
 function deleteDump(id) {
   const el = document.querySelector(`.inbox-item[data-id="${id}"]`);
   if (el) el.remove();
@@ -3715,10 +3742,15 @@ function deleteDump(id) {
   updateDumpCount();
 }
 
-function convertToTask(id, text) {
-  document.getElementById('t-title').value = text;
-  deleteDump(id);
+let _pendingDumpId = null;
+
+function convertToTask(dumpId, text) {
+  _pendingDumpId = dumpId;
   openModal('task');
+  setTimeout(() => {
+    const titleEl = document.getElementById('t-title');
+    if (titleEl) { titleEl.value = text; titleEl.focus(); titleEl.select(); }
+  }, 80);
 }
 
 function updateDumpCount() {
@@ -4137,6 +4169,7 @@ function closeModal(type) {
   const overlay = document.getElementById('modal-' + type);
   if (!overlay) return;
   overlay.classList.remove('open');
+  if (type === 'task') _pendingDumpId = null;
   // only restore scroll if no other modal open
   if (!document.querySelector('.modal-overlay.open')) {
     document.body.style.overflow = '';
