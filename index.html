@@ -375,8 +375,8 @@ textarea{resize:vertical}
 }
 .task-table tr:last-child td{border-bottom:none}
 .task-table tbody tr:hover td{background:#374151;cursor:pointer}
-.task-table tr.t-done .task-title-cell{text-decoration:line-through;text-decoration-color:#6b7280;color:#6b7280}
-.task-table tr.t-done td{opacity:1;color:#6b7280}
+.task-table tr.t-done .task-title-cell{text-decoration:line-through;text-decoration-color:#6b7280;color:#9ca3af;font-size:13.5px}
+.task-table tr.t-done td{opacity:1;color:#9ca3af}
 .task-check-cell{width:44px;padding:8px 4px!important;vertical-align:middle}
 .task-title-cell{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-date-cell{font-size:12px;color:#6b7280;direction:ltr;text-align:left;white-space:nowrap}
@@ -578,7 +578,7 @@ textarea{resize:vertical}
 .subtask-check svg{display:none}
 .subtask-check.done svg{display:block;color:#fff}
 .subtask-title{flex:1;color:#f9fafb}
-.subtask-row.done-sub .subtask-title{text-decoration:line-through;text-decoration-color:#6b7280;color:#6b7280}
+.subtask-row.done-sub .subtask-title{text-decoration:line-through;text-decoration-color:#6b7280;color:#9ca3af;font-size:13px}
 .subtask-del{width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:#4b5563;cursor:pointer;border-radius:3px;opacity:0}
 .subtask-row:hover .subtask-del{opacity:1}
 .subtask-del:hover{color:#f87171}
@@ -2183,6 +2183,17 @@ tr:hover .task-row-actions{opacity:1}
   <div class="panel-body">
     <div class="panel-section">
       <div class="panel-row">
+        <span class="panel-field-label">المشروع</span>
+        <select class="panel-select" id="panel-workspace" onchange="filterPanelProjects()">
+          <option value="">كل المشاريع</option>
+        </select>
+      </div>
+      <div class="panel-row">
+        <span class="panel-field-label" style="opacity:0">المشروع</span>
+        <select class="panel-select" id="panel-project" onchange="movePanelTaskToProject(this.value)">
+        </select>
+      </div>
+      <div class="panel-row">
         <span class="panel-field-label">الإلحاح</span>
         <select class="panel-select" id="panel-priority" onchange="updatePanelField('priority',this.value)">
           <option value="urgent">🔴 عاجل</option><option value="high">🟠 مرتفع</option>
@@ -3070,7 +3081,7 @@ function buildArchiveRows(doneTasks, filter) {
         </div>
       </td>
       <td class="task-title-cell">
-        <span onclick="openDetailPanel('${t.id}')" class="task-title-span" style="text-decoration:line-through;color:#6b7280">${t.title} ${sb}</span>
+        <span onclick="openDetailPanel('${t.id}')" class="task-title-span" style="text-decoration:line-through;color:#9ca3af;font-size:13.5px">${t.title} ${sb}</span>
         <span class="task-row-actions">
           <button onclick="event.stopPropagation();duplicateTask('${t.id}')" class="task-row-btn" title="نسخ">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -5332,12 +5343,70 @@ function assignProjectToGroup(projId, groupId) {
 // ══════════════════════════════════════
 let currentPanelTaskId = null;
 
+
+function filterPanelProjects() {
+  const wsSel = document.getElementById('panel-workspace');
+  const projSel = document.getElementById('panel-project');
+  if (!wsSel || !projSel) return;
+  const wsId = wsSel.value;
+  const projects = wsId
+    ? (WORKSPACES.find(w=>w.id===wsId)?.projectIds||[]).map(id=>PROJECTS[id]).filter(Boolean)
+    : Object.values(PROJECTS);
+  projSel.innerHTML = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('') || '<option value="">لا توجد مشاريع</option>';
+  // Auto-trigger move to first project in new workspace
+  if (projects.length && projects[0].id !== currentProjectId) {
+    movePanelTaskToProject(projects[0].id);
+  }
+}
+
+function movePanelTaskToProject(targetProjId) {
+  if (!targetProjId || targetProjId === currentProjectId) return;
+  const srcProj = PROJECTS[currentProjectId];
+  const targetProj = PROJECTS[targetProjId];
+  if (!srcProj || !targetProj) return;
+
+  const idx = srcProj.tasks.findIndex(t => t.id === currentPanelTaskId);
+  if (idx < 0) return;
+
+  const [task] = srcProj.tasks.splice(idx, 1);
+  targetProj.tasks.push(task);
+
+  // Clean up timebox refs (task moved, slot is still valid since timebox is global)
+  autoSaveData();
+  renderTaskList();
+  renderKanban();
+  updateProjectMeta();
+  refreshSidebarProjects();
+  showToast(`تم نقل المهمة إلى "${targetProj.name}" ✓`);
+
+  // Close panel — task now lives in a different project's context
+  closeDetailPanel();
+}
+
 function openDetailPanel(taskId) {
   const proj = PROJECTS[currentProjectId];
   if (!proj) return;
   const task = proj.tasks.find(t => t.id === taskId);
   if (!task) return;
   currentPanelTaskId = taskId;
+
+  // populate workspace/project selectors
+  const panelWsSel = document.getElementById('panel-workspace');
+  const panelProjSel = document.getElementById('panel-project');
+  if (panelWsSel) {
+    panelWsSel.innerHTML = '<option value="">كل المشاريع</option>' +
+      WORKSPACES.map(ws => `<option value="${ws.id}">${typeof ws.icon==='string'?ws.icon:''} ${ws.name}</option>`).join('');
+    const currentWs = WORKSPACES.find(w => w.projectIds.includes(currentProjectId));
+    panelWsSel.value = currentWs ? currentWs.id : '';
+  }
+  if (panelProjSel) {
+    const wsId = panelWsSel?.value || '';
+    const projects = wsId
+      ? (WORKSPACES.find(w=>w.id===wsId)?.projectIds||[]).map(id=>PROJECTS[id]).filter(Boolean)
+      : Object.values(PROJECTS);
+    panelProjSel.innerHTML = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    panelProjSel.value = currentProjectId;
+  }
 
   // populate fields
   document.getElementById('panel-title').value = task.title;
