@@ -1475,6 +1475,28 @@ tr:hover .task-row-actions{opacity:1}
   padding:1px 6px;font-family:inherit;outline:none;
   min-width:200px;
 }
+
+/* ══ SUBTASK MILESTONE GROUPS ══ */
+.subtask-ms-group{margin-bottom:10px}
+.subtask-ms-header{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;margin-bottom:5px;
+  border-bottom:1px solid #374151;
+}
+.subtask-ms-header .ms-icon{color:#a78bfa;flex-shrink:0}
+.subtask-ms-name{font-size:12.5px;font-weight:600;color:#d1d5db;flex:1}
+.subtask-ms-progress{font-size:11px;color:#a78bfa;white-space:nowrap}
+.subtask-ms-bar{
+  height:3px;background:#374151;border-radius:2px;overflow:hidden;
+  flex-basis:60px;flex-shrink:0;
+}
+.subtask-ms-bar-fill{height:100%;background:#8b5cf6;border-radius:2px;transition:width .25s}
+.subtask-ms-rows{display:flex;flex-direction:column;gap:5px;padding-right:4px}
+.subtask-ms-select{
+  background:#374151;border:1px solid #4b5563;border-radius:6px;
+  color:#e5e7eb;font-size:11.5px;padding:5px 8px;cursor:pointer;
+  font-family:inherit;flex-shrink:0;max-width:130px;
+}
 </style>
 
 <body>
@@ -2245,6 +2267,9 @@ tr:hover .task-row-actions{opacity:1}
       <div class="subtask-list" id="panel-subtask-list"></div>
       <div class="add-subtask-row">
         <input class="add-subtask-input" id="subtask-input" placeholder="أضف مهمة فرعية..." onkeydown="if(event.key==='Enter')addSubtask()">
+        <select class="subtask-ms-select" id="subtask-ms-select" title="اختر مرحلة (اختياري)">
+          <option value="">بدون مرحلة</option>
+        </select>
         <button class="add-subtask-btn" onclick="addSubtask()">+ إضافة</button>
       </div>
     </div>
@@ -2969,6 +2994,10 @@ function renderTaskList() {
             : '<span style="width:18px;display:inline-block"></span>';
           const subsBadge = hasSubs
             ? `<span class="subtask-count-badge">${subsDone}/${subs.length}</span>` : '';
+          const taskMs = (proj.milestones||[]).filter(m => m.taskIds?.includes(t.id));
+          const msBadge = taskMs.length
+            ? `<span class="subtask-count-badge" style="background:rgba(167,139,250,.12);color:#a78bfa" title="${taskMs.map(m=>m.name).join(', ')}">🚩 ${taskMs.length}</span>`
+            : '';
           const mainRow = `<tr class="${t.done?'t-done':''}" data-task-id="${t.id}" style="cursor:pointer">
             <td class="task-check-cell">
               <div style="display:flex;align-items:center;justify-content:center;gap:3px">
@@ -2982,7 +3011,7 @@ function renderTaskList() {
               </div>
             </td>
             <td class="task-title-cell">
-              <span onclick="openDetailPanel('${t.id}')" ondblclick="event.stopPropagation();inlineEditTask('${t.id}',this)" class="task-title-span" title="اضغط للتفاصيل — اضغط مرتين للتعديل">${impBadge} ${t.title} ${subsBadge}</span>
+              <span onclick="openDetailPanel('${t.id}')" ondblclick="event.stopPropagation();inlineEditTask('${t.id}',this)" class="task-title-span" title="اضغط للتفاصيل — اضغط مرتين للتعديل">${impBadge} ${t.title} ${msBadge} ${subsBadge}</span>
               <span class="task-row-actions">
                 <button onclick="event.stopPropagation();archiveTask('${t.id}')" class="task-row-btn" title="أرشفة المهمة" style="color:#6b7280">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -5506,23 +5535,89 @@ function updatePanelField(field, value) {
 }
 
 // ── SUBTASKS ──
+function subtaskRowHTML(s, i, checkSvg, dragSvg) {
+  return `<div class="subtask-row${s.done?' done-sub':''}" draggable="true" data-idx="${i}">
+      <span class="subtask-drag-handle" title="اسحب لإعادة الترتيب">${dragSvg}</span>
+      <div class="subtask-check${s.done?' done':''}" onclick="toggleSubtask(${i})">${checkSvg}</div>
+      <span class="subtask-title" ondblclick="editSubtask(${i}, this)" title="اضغط مرتين للتعديل">${s.title}</span>
+      <button class="subtask-del" onclick="deleteSubtask(${i})">×</button>
+    </div>`;
+}
+
 function renderPanelSubtasks() {
   const proj = PROJECTS[currentProjectId];
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task) return;
   if (!task.subtasks) task.subtasks = [];
+  if (!proj.milestones) proj.milestones = [];
 
   const list = document.getElementById('panel-subtask-list');
   const checkSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
   const dragSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>`;
+  const flagSvg = `<svg class="ms-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>`;
 
-  list.innerHTML = task.subtasks.map((s,i) => `
-    <div class="subtask-row${s.done?' done-sub':''}" draggable="true" data-idx="${i}">
-      <span class="subtask-drag-handle" title="اسحب لإعادة الترتيب">${dragSvg}</span>
-      <div class="subtask-check${s.done?' done':''}" onclick="toggleSubtask(${i})">${checkSvg}</div>
-      <span class="subtask-title" ondblclick="editSubtask(${i}, this)" title="اضغط مرتين للتعديل">${s.title}</span>
-      <button class="subtask-del" onclick="deleteSubtask(${i})">×</button>
-    </div>`).join('');
+  // Milestones linked to this task
+  const taskMilestones = proj.milestones.filter(m => m.taskIds?.includes(currentPanelTaskId));
+
+  // Group subtasks by milestoneId
+  const groups = {}; // msId -> [{sub, originalIdx}]
+  const unassigned = [];
+  task.subtasks.forEach((s, i) => {
+    if (s.milestoneId && taskMilestones.find(m => m.id === s.milestoneId)) {
+      (groups[s.milestoneId] = groups[s.milestoneId] || []).push({s, i});
+    } else {
+      unassigned.push({s, i});
+    }
+  });
+
+  let html = '';
+
+  // Render milestone groups (in milestone order)
+  taskMilestones.forEach(ms => {
+    const items = groups[ms.id] || [];
+    const done = items.filter(x => x.s.done).length;
+    const pct = items.length ? Math.round(done/items.length*100) : 0;
+    html += `<div class="subtask-ms-group" data-ms-id="${ms.id}">
+      <div class="subtask-ms-header">
+        ${flagSvg}
+        <span class="subtask-ms-name">${ms.name}</span>
+        <div class="subtask-ms-bar"><div class="subtask-ms-bar-fill" style="width:${pct}%"></div></div>
+        <span class="subtask-ms-progress">${done}/${items.length}</span>
+      </div>
+      <div class="subtask-ms-rows">
+        ${items.map(({s,i}) => subtaskRowHTML(s, i, checkSvg, dragSvg)).join('') || '<div style="font-size:11.5px;color:#6b7280;padding:4px 8px">لا توجد مهام فرعية بعد</div>'}
+      </div>
+    </div>`;
+  });
+
+  // Unassigned subtasks (no milestone, or task has no milestones at all)
+  if (unassigned.length || !taskMilestones.length) {
+    if (taskMilestones.length && unassigned.length) {
+      html += `<div class="subtask-ms-group">
+        <div class="subtask-ms-header">
+          <span class="subtask-ms-name" style="color:#6b7280">بدون مرحلة</span>
+        </div>
+        <div class="subtask-ms-rows">
+          ${unassigned.map(({s,i}) => subtaskRowHTML(s, i, checkSvg, dragSvg)).join('')}
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="subtask-ms-rows">
+        ${unassigned.map(({s,i}) => subtaskRowHTML(s, i, checkSvg, dragSvg)).join('')}
+      </div>`;
+    }
+  }
+
+  list.innerHTML = html;
+
+  // Populate milestone select for adding new subtasks
+  const msSel = document.getElementById('subtask-ms-select');
+  if (msSel) {
+    const currentVal = msSel.value;
+    msSel.innerHTML = '<option value="">بدون مرحلة</option>' +
+      taskMilestones.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    if (taskMilestones.find(m => m.id === currentVal)) msSel.value = currentVal;
+  }
 
   const done = task.subtasks.filter(s=>s.done).length;
   document.getElementById('panel-sub-count').textContent = `${done}/${task.subtasks.length}`;
@@ -5606,9 +5701,13 @@ function addSubtask() {
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task) return;
   if (!task.subtasks) task.subtasks = [];
-  task.subtasks.push({id:'s'+Date.now(), title, done:false});
+  const msSel = document.getElementById('subtask-ms-select');
+  const milestoneId = msSel?.value || null;
+  task.subtasks.push({id:'s'+Date.now(), title, done:false, milestoneId});
   input.value = '';
+  autoSaveData();
   renderPanelSubtasks();
+  renderTaskList();
 }
 
 function toggleSubtask(idx) {
@@ -5647,6 +5746,9 @@ function renderPanelMilestones() {
       <div class="milestone-header">
         <span class="milestone-name">${m.name}</span>
         ${dateStr?`<span class="milestone-date">${dateStr}</span>`:''}
+        <button onclick="deleteMilestone('${m.id}')" title="حذف المرحلة" style="background:none;border:none;color:#6b7280;cursor:pointer;padding:2px;display:flex;align-items:center;flex-shrink:0">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
       </div>
       <div class="milestone-progress-bar"><div class="milestone-progress-fill" style="width:${pct}%"></div></div>
       <div class="milestone-meta">${done}/${linkedTasks.length} مهام مكتملة · ${pct}%</div>
@@ -5668,8 +5770,29 @@ function saveMilestone() {
   });
   document.getElementById('ms-name').value = '';
   closeModal('milestone');
+  autoSaveData();
   renderPanelMilestones();
+  renderPanelSubtasks();
+  renderTaskList();
   showToast('تمت إضافة المرحلة ✓');
+}
+
+function deleteMilestone(msId) {
+  const proj = PROJECTS[currentProjectId];
+  if (!proj?.milestones) return;
+  askConfirm('حذف هذه المرحلة؟', {type:'delete', yesLabel:'نعم، احذف', detail:'لن يتم حذف المهام الفرعية، فقط ستصبح بدون مرحلة'}).then(ok => {
+    if (!ok) return;
+    proj.milestones = proj.milestones.filter(m => m.id !== msId);
+    // Unassign subtasks that referenced this milestone
+    proj.tasks.forEach(t => {
+      (t.subtasks||[]).forEach(s => { if (s.milestoneId === msId) s.milestoneId = null; });
+    });
+    autoSaveData();
+    renderPanelMilestones();
+    renderPanelSubtasks();
+    renderTaskList();
+    showToast('تم حذف المرحلة');
+  });
 }
 
 function deleteCurrentTask() {
