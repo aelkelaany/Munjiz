@@ -547,8 +547,27 @@ textarea{resize:vertical}
 /* SUBTASKS */
 .subtask-list{display:flex;flex-direction:column;gap:4px;margin-bottom:7px}
 .subtask-row{
-  display:flex;align-items:center;gap:7px;padding:7px 10px;
+  display:flex;align-items:center;gap:6px;padding:7px 10px;
   background:#374151;border:1px solid #374151;border-radius:6px;font-size:13px;
+  transition:background .15s,opacity .15s,transform .15s;
+}
+.subtask-row.dragging{opacity:.4}
+.subtask-row.drag-over{border-color:#8b5cf6;background:rgba(139,92,246,.08)}
+.subtask-drag-handle{
+  cursor:grab;color:#4b5563;flex-shrink:0;
+  display:flex;align-items:center;
+  touch-action:none;
+}
+.subtask-drag-handle:active{cursor:grabbing}
+.subtask-drag-handle:hover{color:#9ca3af}
+.subtask-title{
+  flex:1;cursor:pointer;border-radius:4px;padding:2px 4px;
+  transition:background .12s;
+}
+.subtask-title:hover{background:#4b5563}
+.subtask-edit-input{
+  flex:1;background:#1f2937;border:1.5px solid #8b5cf6;border-radius:4px;
+  color:#f9fafb;font-size:13px;padding:2px 6px;font-family:inherit;outline:none;
 }
 .subtask-row:hover{border-color:#374151}
 .subtask-check{
@@ -5384,16 +5403,88 @@ function renderPanelSubtasks() {
 
   const list = document.getElementById('panel-subtask-list');
   const checkSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
+  const dragSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>`;
 
   list.innerHTML = task.subtasks.map((s,i) => `
-    <div class="subtask-row${s.done?' done-sub':''}">
+    <div class="subtask-row${s.done?' done-sub':''}" draggable="true" data-idx="${i}">
+      <span class="subtask-drag-handle" title="اسحب لإعادة الترتيب">${dragSvg}</span>
       <div class="subtask-check${s.done?' done':''}" onclick="toggleSubtask(${i})">${checkSvg}</div>
-      <span class="subtask-title">${s.title}</span>
+      <span class="subtask-title" ondblclick="editSubtask(${i}, this)" title="اضغط مرتين للتعديل">${s.title}</span>
       <button class="subtask-del" onclick="deleteSubtask(${i})">×</button>
     </div>`).join('');
 
   const done = task.subtasks.filter(s=>s.done).length;
   document.getElementById('panel-sub-count').textContent = `${done}/${task.subtasks.length}`;
+
+  wireSubtaskDragDrop();
+}
+
+function editSubtask(idx, spanEl) {
+  const proj = PROJECTS[currentProjectId];
+  const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
+  if (!task?.subtasks?.[idx]) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'subtask-edit-input';
+  input.value = task.subtasks[idx].title;
+
+  spanEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const save = () => {
+    const val = input.value.trim();
+    if (val) task.subtasks[idx].title = val;
+    autoSaveData();
+    renderPanelSubtasks();
+    renderTaskList();
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { renderPanelSubtasks(); }
+  });
+}
+
+let _dragSubtaskIdx = null;
+
+function wireSubtaskDragDrop() {
+  const rows = document.querySelectorAll('#panel-subtask-list .subtask-row');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', e => {
+      _dragSubtaskIdx = parseInt(row.dataset.idx);
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('#panel-subtask-list .subtask-row').forEach(r => r.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const targetIdx = parseInt(row.dataset.idx);
+      if (_dragSubtaskIdx === null || _dragSubtaskIdx === targetIdx) return;
+
+      const proj = PROJECTS[currentProjectId];
+      const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
+      if (!task?.subtasks) return;
+
+      const [moved] = task.subtasks.splice(_dragSubtaskIdx, 1);
+      task.subtasks.splice(targetIdx, 0, moved);
+      _dragSubtaskIdx = null;
+      autoSaveData();
+      renderPanelSubtasks();
+      renderTaskList();
+    });
+  });
 }
 
 function addSubtask() {
@@ -5414,6 +5505,7 @@ function toggleSubtask(idx) {
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task?.subtasks) return;
   task.subtasks[idx].done = !task.subtasks[idx].done;
+  autoSaveData();
   renderPanelSubtasks();
 }
 
@@ -5422,6 +5514,7 @@ function deleteSubtask(idx) {
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task?.subtasks) return;
   task.subtasks.splice(idx,1);
+  autoSaveData();
   renderPanelSubtasks();
 }
 
