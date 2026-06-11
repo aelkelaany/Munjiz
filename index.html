@@ -1468,6 +1468,13 @@ tr:hover .task-row-actions{opacity:1}
   background:#1f2937;
 }
 #t-workspace:focus{border-bottom-color:#a78bfa}
+
+.proj-title-edit-input{
+  font-size:22px;font-weight:700;color:#f9fafb;
+  background:#1f2937;border:1.5px solid #8b5cf6;border-radius:6px;
+  padding:1px 6px;font-family:inherit;outline:none;
+  min-width:200px;
+}
 </style>
 
 <body>
@@ -1670,7 +1677,7 @@ tr:hover .task-row-actions{opacity:1}
             <div class="page-icon" id="proj-icon-display">🏛️</div>
           </div>
           <div style="flex:1;min-width:0">
-            <h1 id="proj-page-title" style="font-size:22px;font-weight:700;color:#f9fafb;margin:0 0 4px"></h1>
+            <h1 id="proj-page-title" ondblclick="editProjectName(this)" title="اضغط مرتين لتغيير الاسم" style="font-size:22px;font-weight:700;color:#f9fafb;margin:0 0 4px;cursor:pointer;border-radius:6px;padding:2px 4px;display:inline-block;transition:background .12s" onmouseover="this.style.background='#374151'" onmouseout="this.style.background='none'"></h1>
             <div id="proj-page-meta" style="font-size:12px;color:#6b7280"></div>
           </div>
           <button onclick="moveProjectToWorkspace(currentProjectId)" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#374151;border:1px solid #374151;border-radius:7px;color:#9ca3af;font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='#a78bfa';this.style.borderColor='#8b5cf6'" onmouseout="this.style.color='#9ca3af';this.style.borderColor='#374151'">
@@ -2080,7 +2087,7 @@ tr:hover .task-row-actions{opacity:1}
                 <div class="page-icon" id="note-icon-display" style="width:32px;height:32px;font-size:18px;border-radius:7px">📝</div>
               </div>
               <input class="note-editor-title" id="note-editor-title" placeholder="عنوان النوت" onblur="saveNoteTitle()">
-              <button class="btn btn-accent" onclick="saveCurrentNote(true)" style="font-size:12px;padding:6px 14px">
+              <button class="btn btn-accent" onclick="saveAndCloseNote()" style="font-size:12px;padding:6px 14px">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
                 حفظ
               </button>
@@ -3977,6 +3984,41 @@ function toggleWsGroup(wsId) {
 }
 
 
+
+
+function editProjectName(h1El) {
+  const proj = PROJECTS[currentProjectId];
+  if (!proj) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'proj-title-edit-input';
+  input.value = proj.name;
+  input.style.width = Math.max(200, h1El.offsetWidth + 20) + 'px';
+
+  h1El.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const save = () => {
+    const newName = input.value.trim();
+    if (newName && newName !== proj.name) {
+      proj.name = newName;
+      autoSaveData();
+      renderSidebarProjects();
+      renderSidebarWorkspaces();
+      renderProjects();
+      showToast('تم تغيير اسم المشروع ✓');
+    }
+    openProject(currentProjectId); // re-render header cleanly
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { openProject(currentProjectId); }
+  });
+}
 
 function moveProjectToWorkspace(projId) {
   const proj = PROJECTS[projId];
@@ -6201,6 +6243,15 @@ function openNote(noteId) {
     }
     renderNoteBreadcrumb(currentResId, noteId);
   }, 0);
+}
+
+
+function saveAndCloseNote() {
+  saveCurrentNote(true);
+  currentNoteId = null;
+  document.getElementById('notes-list-view').style.display = 'block';
+  document.getElementById('note-editor-panel').classList.remove('open');
+  renderNotesList();
 }
 
 function backToNotesList() {
