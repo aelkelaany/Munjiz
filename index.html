@@ -2653,6 +2653,10 @@ const PROJECTS = {};
 let TIMEBOX_DATA = {};
 // Brain Dump items — persisted to localStorage
 let DUMP_ITEMS = [];
+// Kanban — track which column a new task should go to
+let currentKanbanColId = null;
+// Pending dump item being converted to task
+let _pendingDumpId = null;
 
 const PRIORITY_MAP = {
   urgent:{cls:'p-urgent',label:'عاجل'},
@@ -3176,6 +3180,8 @@ function confirmAddCard() {
   renderKanban();
   updateProjectMeta();
   if (_pendingDumpId) { deleteDump(_pendingDumpId); _pendingDumpId = null; }
+  currentKanbanColId = null;
+  if (_pendingDumpId) { deleteDump(_pendingDumpId); _pendingDumpId = null; }
   autoSaveData();
   showToast('تمت إضافة المهمة ✓');
 }
@@ -3679,6 +3685,8 @@ function saveTask() {
     // Navigate to the project where task was added
     openProject(projId);
   }
+  // Remove from Brain Dump if converted
+  if (_pendingDumpId) { deleteDump(_pendingDumpId); _pendingDumpId = null; }
   showToast('تمت إضافة المهمة ✓');
 }
 
@@ -3745,7 +3753,7 @@ function deleteDump(id) {
   updateDumpCount();
 }
 
-let _pendingDumpId = null;
+
 
 function convertToTask(dumpId, text) {
   _pendingDumpId = dumpId;
