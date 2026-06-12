@@ -499,7 +499,7 @@ textarea{resize:vertical}
 #panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:399;display:none}
 #panel-overlay.show{display:block}
 #detail-panel{
-  position:fixed;top:0;left:0;bottom:0;width:400px;max-width:92vw;
+  position:fixed;top:0;left:0;bottom:0;width:460px;max-width:94vw;
   background:#1f2937;border-right:1px solid #374151;
   z-index:400;display:flex;flex-direction:column;
   transform:translateX(-110%);transition:transform .25s cubic-bezier(.4,0,.2,1);
@@ -1482,6 +1482,12 @@ tr:hover .task-row-actions{opacity:1}
   display:flex;align-items:center;gap:8px;
   padding:6px 8px;margin-bottom:5px;
   border-bottom:1px solid #374151;
+  border-radius:6px;
+  transition:background .15s,border-color .15s;
+}
+.subtask-ms-header.drag-over{
+  background:rgba(139,92,246,.1);
+  border-color:#8b5cf6;
 }
 .subtask-ms-header .ms-icon{color:#a78bfa;flex-shrink:0}
 .subtask-ms-name{font-size:12.5px;font-weight:600;color:#d1d5db;flex:1}
@@ -1492,10 +1498,23 @@ tr:hover .task-row-actions{opacity:1}
 }
 .subtask-ms-bar-fill{height:100%;background:#8b5cf6;border-radius:2px;transition:width .25s}
 .subtask-ms-rows{display:flex;flex-direction:column;gap:5px;padding-right:4px}
-.subtask-ms-select{
-  background:#374151;border:1px solid #4b5563;border-radius:6px;
-  color:#e5e7eb;font-size:11.5px;padding:5px 8px;cursor:pointer;
-  font-family:inherit;flex-shrink:0;max-width:130px;
+
+
+/* ══ LIGHT MODE (داخل النهار) ══ */
+html.light-mode{
+  filter: invert(1) hue-rotate(180deg);
+}
+/* Counter-invert images, icons, and anything with photo content so they look normal */
+html.light-mode img,
+html.light-mode .page-cover img,
+html.light-mode .page-icon img,
+html.light-mode video,
+html.light-mode iframe{
+  filter: invert(1) hue-rotate(180deg);
+}
+/* Slightly soften pure white background to reduce glare */
+html.light-mode body{
+  background:#f3f4f6;
 }
 </style>
 
@@ -2267,9 +2286,6 @@ tr:hover .task-row-actions{opacity:1}
       <div class="subtask-list" id="panel-subtask-list"></div>
       <div class="add-subtask-row">
         <input class="add-subtask-input" id="subtask-input" placeholder="أضف مهمة فرعية..." onkeydown="if(event.key==='Enter')addSubtask()">
-        <select class="subtask-ms-select" id="subtask-ms-select" title="اختر مرحلة (اختياري)">
-          <option value="">بدون مرحلة</option>
-        </select>
         <button class="add-subtask-btn" onclick="addSubtask()">+ إضافة</button>
       </div>
     </div>
@@ -4733,6 +4749,16 @@ function refreshSidebarProjects() {
 
 // Init — render first project list on load
 document.addEventListener('DOMContentLoaded', () => {
+  // Sync light mode toggle UI with restored class
+  if (document.documentElement.classList.contains('light-mode')) {
+    const toggle = document.getElementById('light-mode-toggle');
+    if (toggle) toggle.checked = true;
+    const track = document.getElementById('light-mode-track');
+    const knob = document.getElementById('light-mode-knob');
+    if (track) track.style.background = '#fbbf24';
+    if (knob) { knob.style.transform = 'translateX(18px)'; knob.style.background = '#fff'; }
+  }
+
   // ── Restore from localStorage (all vars defined by now) ──
   try {
     const saved = localStorage.getItem('munjiz-data');
@@ -5610,15 +5636,6 @@ function renderPanelSubtasks() {
 
   list.innerHTML = html;
 
-  // Populate milestone select for adding new subtasks
-  const msSel = document.getElementById('subtask-ms-select');
-  if (msSel) {
-    const currentVal = msSel.value;
-    msSel.innerHTML = '<option value="">بدون مرحلة</option>' +
-      taskMilestones.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-    if (taskMilestones.find(m => m.id === currentVal)) msSel.value = currentVal;
-  }
-
   const done = task.subtasks.filter(s=>s.done).length;
   document.getElementById('panel-sub-count').textContent = `${done}/${task.subtasks.length}`;
 
@@ -5665,7 +5682,7 @@ function wireSubtaskDragDrop() {
     });
     row.addEventListener('dragend', () => {
       row.classList.remove('dragging');
-      document.querySelectorAll('#panel-subtask-list .subtask-row').forEach(r => r.classList.remove('drag-over'));
+      document.querySelectorAll('#panel-subtask-list .subtask-row, #panel-subtask-list .subtask-ms-header').forEach(r => r.classList.remove('drag-over'));
     });
     row.addEventListener('dragover', e => {
       e.preventDefault();
@@ -5677,14 +5694,54 @@ function wireSubtaskDragDrop() {
       e.preventDefault();
       row.classList.remove('drag-over');
       const targetIdx = parseInt(row.dataset.idx);
-      if (_dragSubtaskIdx === null || _dragSubtaskIdx === targetIdx) return;
+      if (_dragSubtaskIdx === null || _dragSubtaskIdx === targetIdx) { _dragSubtaskIdx = null; return; }
 
       const proj = PROJECTS[currentProjectId];
       const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
       if (!task?.subtasks) return;
 
+      // Adopt the target row's milestone group, then place at that position
+      const targetGroup = row.closest('.subtask-ms-group');
+      const targetMsId = targetGroup ? (targetGroup.dataset.msId || null) : null;
+
       const [moved] = task.subtasks.splice(_dragSubtaskIdx, 1);
-      task.subtasks.splice(targetIdx, 0, moved);
+      moved.milestoneId = targetMsId || null;
+      // After removal, indices shift if the dragged item was before the target
+      const insertAt = _dragSubtaskIdx < targetIdx ? targetIdx - 1 : targetIdx;
+      task.subtasks.splice(insertAt, 0, moved);
+
+      _dragSubtaskIdx = null;
+      autoSaveData();
+      renderPanelSubtasks();
+      renderTaskList();
+    });
+  });
+
+  // Milestone group headers as drop targets (move subtask into this milestone, append to end of its group)
+  const headers = document.querySelectorAll('#panel-subtask-list .subtask-ms-header');
+  headers.forEach(header => {
+    header.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      header.classList.add('drag-over');
+    });
+    header.addEventListener('dragleave', () => header.classList.remove('drag-over'));
+    header.addEventListener('drop', e => {
+      e.preventDefault();
+      header.classList.remove('drag-over');
+      if (_dragSubtaskIdx === null) return;
+
+      const proj = PROJECTS[currentProjectId];
+      const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
+      if (!task?.subtasks) return;
+
+      const group = header.closest('.subtask-ms-group');
+      const targetMsId = group ? (group.dataset.msId || null) : null;
+
+      const [moved] = task.subtasks.splice(_dragSubtaskIdx, 1);
+      moved.milestoneId = targetMsId || null;
+      task.subtasks.push(moved); // append — will render at end of its new group
+
       _dragSubtaskIdx = null;
       autoSaveData();
       renderPanelSubtasks();
@@ -5701,9 +5758,7 @@ function addSubtask() {
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task) return;
   if (!task.subtasks) task.subtasks = [];
-  const msSel = document.getElementById('subtask-ms-select');
-  const milestoneId = msSel?.value || null;
-  task.subtasks.push({id:'s'+Date.now(), title, done:false, milestoneId});
+  task.subtasks.push({id:'s'+Date.now(), title, done:false, milestoneId:null});
   input.value = '';
   autoSaveData();
   renderPanelSubtasks();
@@ -7464,6 +7519,23 @@ setInterval(() => autoSaveData(), 60000);
 // ══════════════════════════════════════
 // THEME CONTROLLER
 // ══════════════════════════════════════
+
+function toggleLightMode(on) {
+  const html = document.documentElement;
+  const track = document.getElementById('light-mode-track');
+  const knob = document.getElementById('light-mode-knob');
+  if (on) {
+    html.classList.add('light-mode');
+    if (track) track.style.background = '#fbbf24';
+    if (knob) { knob.style.transform = 'translateX(18px)'; knob.style.background = '#fff'; }
+  } else {
+    html.classList.remove('light-mode');
+    if (track) track.style.background = '#4b5563';
+    if (knob) { knob.style.transform = 'translateX(0)'; knob.style.background = '#9ca3af'; }
+  }
+  try { localStorage.setItem('munjiz-light-mode', on ? '1' : '0'); } catch(e){}
+}
+
 function toggleThemePanel() {
   const p = document.getElementById('theme-panel');
   if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
@@ -7649,6 +7721,10 @@ function setFontSize(size) {
     } else {
       setFontSize(16); // Apply default overrides
     }
+    // Restore light mode immediately (avoid flash of dark theme)
+    if (localStorage.getItem('munjiz-light-mode') === '1') {
+      document.documentElement.classList.add('light-mode');
+    }
   } catch(e) {}
 })();
 
@@ -7792,6 +7868,20 @@ function updateTopbarBreadcrumb(page) {
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
     <span style="font-size:14px;font-weight:600;color:#f9fafb">تخصيص المظهر</span>
     <button onclick="toggleThemePanel()" style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:18px">×</button>
+  </div>
+
+  <!-- Daytime / Light mode toggle -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:10px 12px;background:#374151;border-radius:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <span style="font-size:13px;color:#e5e7eb">الوضع النهاري</span>
+    </div>
+    <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+      <input type="checkbox" id="light-mode-toggle" onchange="toggleLightMode(this.checked)" style="opacity:0;width:0;height:0">
+      <span id="light-mode-track" style="position:absolute;inset:0;background:#4b5563;border-radius:22px;transition:.2s">
+        <span id="light-mode-knob" style="position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#9ca3af;border-radius:50%;transition:.2s"></span>
+      </span>
+    </label>
   </div>
 
   <div style="margin-bottom:14px">
