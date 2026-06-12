@@ -15,6 +15,40 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+:root{
+  /* ── Surface layers (dark, default) ── */
+  --bg-base:#111827;       /* page background */
+  --bg-surface:#1f2937;    /* sidebar, topbar, cards, modals */
+  --bg-elevated:#374151;   /* table headers, toolbars, inputs */
+  --bg-hover:#374151;      /* hover state on surface */
+
+  /* ── Text ── */
+  --text-primary:#f9fafb;
+  --text-secondary:#e5e7eb;
+  --text-muted:#9ca3af;
+  --text-dim:#6b7280;
+
+  /* ── Borders ── */
+  --border:#374151;
+  --border-light:#4b5563;
+}
+
+[data-theme="light"]{
+  --bg-base:#f3f4f6;
+  --bg-surface:#ffffff;
+  --bg-elevated:#f3f4f6;
+  --bg-hover:#e5e7eb;
+
+  --text-primary:#111827;
+  --text-secondary:#1f2937;
+  --text-muted:#6b7280;
+  --text-dim:#9ca3af;
+
+  --border:#e5e7eb;
+  --border-light:#d1d5db;
+}
+
+
 /* ═══════════════════════════════════
    RESET
 ═══════════════════════════════════ */
@@ -23,10 +57,11 @@ html{font-size:16px}
 html,body{height:100%;overflow:hidden}
 body{
   font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;
-  background:#111827;color:#f9fafb;
+  background:var(--bg-base);color:var(--text-primary);
   font-size:15px;line-height:1.7;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  transition:background .2s,color .2s;
 }
 input,textarea,select,button{
   font-family:inherit;font-size:inherit;
@@ -49,11 +84,12 @@ textarea{resize:vertical}
 ═══════════════════════════════════ */
 #sidebar{
   width:248px;flex-shrink:0;
-  background:#1f2937;
-  border-left:1px solid #1e3a5f;
+  background:var(--bg-surface);
+  border-left:1px solid var(--border);
   display:flex;flex-direction:column;
   overflow-y:auto;overflow-x:hidden;
   z-index:50;
+  transition:background .2s,border-color .2s;
 }
 .logo{
   padding:18px 16px 14px;
@@ -73,11 +109,11 @@ textarea{resize:vertical}
 .nav-item{
   display:flex;align-items:center;gap:8px;
   padding:8px 10px;border-radius:8px;
-  cursor:pointer;font-size:13px;color:#9ca3af;
+  cursor:pointer;font-size:13px;color:var(--text-muted);
   margin-bottom:1px;transition:background .15s,color .15s;
   position:relative;user-select:none;
 }
-.nav-item:hover{background:#374151;color:#f9fafb}
+.nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
 .nav-item.active{background:#312e81;color:#a78bfa;font-weight:500}
 .nav-item.active::before{
   content:'';position:absolute;right:-8px;top:50%;transform:translateY(-50%);
@@ -110,8 +146,9 @@ textarea{resize:vertical}
 /* TOPBAR */
 #topbar{
   height:54px;flex-shrink:0;
-  background:#1f2937;border-bottom:1px solid #374151;
+  background:var(--bg-surface);border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:10px;padding:0 20px;
+  transition:background .2s,border-color .2s;
 }
 #page-title{font-size:15px;font-weight:600;color:#f9fafb;margin-right:auto;white-space:nowrap}
 .search-wrap{position:relative;flex:1;max-width:340px}
@@ -125,9 +162,10 @@ textarea{resize:vertical}
 #global-search::placeholder{color:#4b5563}
 #search-results{
   position:absolute;top:calc(100% + 4px);right:0;left:0;
-  background:#1f2937;border:1px solid #374151;border-radius:10px;
+  background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;
   box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200;
   max-height:280px;overflow-y:auto;display:none;
+  transition:background .2s,border-color .2s;
 }
 .search-result-item{
   display:flex;align-items:center;gap:10px;
@@ -175,7 +213,7 @@ textarea{resize:vertical}
 /* ═══════════════════════════════════
    CARDS
 ═══════════════════════════════════ */
-.card{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:18px}
+.card{background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:18px;transition:background .2s,border-color .2s}
 .card+.card{margin-top:14px}
 .card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .card-header h2{font-size:14px;font-weight:600;color:#f9fafb;flex:1}
@@ -210,15 +248,16 @@ textarea{resize:vertical}
 ═══════════════════════════════════ */
 .form-input,.form-select,.form-textarea{
   width:100%;padding:8px 12px;
-  background:#374151;border:1px solid #374151;
-  border-radius:8px;color:#f9fafb;font-size:13.5px;
+  background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:8px;color:var(--text-primary);font-size:13.5px;
   direction:auto;
+  transition:background .2s,border-color .2s,color .2s;
 }
 .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:#60a5fa}
 .form-input::placeholder,.form-textarea::placeholder{color:#4b5563}
 .form-group{margin-bottom:12px}
 .form-group:last-child{margin-bottom:0}
-.form-label{display:block;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.3px;margin-bottom:5px}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:.3px;margin-bottom:5px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 /* ═══════════════════════════════════
@@ -233,13 +272,14 @@ textarea{resize:vertical}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal-overlay.open .modal{transform:translateY(0);opacity:1}
 .modal{
-  background:#1f2937;border:1px solid #374151;border-radius:16px;
+  background:var(--bg-surface);border:1px solid var(--border);border-radius:16px;
   padding:22px;width:100%;max-width:460px;
   box-shadow:0 16px 48px rgba(0,0,0,.6);
+  transition:background .2s,border-color .2s;
   transform:translateY(12px);opacity:0;transition:all .2s;
 }
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.modal-title{font-size:15px;font-weight:600;color:#f9fafb}
+.modal-title{font-size:15px;font-weight:600;color:var(--text-primary)}
 .modal-close{
   width:28px;height:28px;display:flex;align-items:center;justify-content:center;
   background:#374151;border:1px solid #374151;border-radius:6px;
@@ -253,9 +293,10 @@ textarea{resize:vertical}
 ═══════════════════════════════════ */
 #dump-textarea{
   width:100%;min-height:90px;
-  background:#374151;border:1px solid #374151;border-radius:8px;
-  padding:12px 14px;color:#f9fafb;font-size:14px;line-height:1.7;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;color:var(--text-primary);font-size:14px;line-height:1.7;
   direction:auto;
+  transition:background .2s,border-color .2s,color .2s;
 }
 #dump-textarea:focus{outline:none;border-color:#60a5fa}
 #dump-textarea::placeholder{color:#4b5563}
@@ -339,42 +380,45 @@ textarea{resize:vertical}
 .table-toolbar{
   display:flex;align-items:center;gap:8px;
   margin-bottom:12px;padding:10px 12px;
-  background:#1f2937;border:1px solid #374151;
+  background:var(--bg-surface);border:1px solid var(--border);
   border-radius:10px;flex-wrap:wrap;
+  transition:background .2s,border-color .2s;
 }
 .table-search{
-  padding:6px 12px;background:#374151;border:1px solid #374151;
-  border-radius:20px;color:#f9fafb;font-size:12.5px;width:190px;
+  padding:6px 12px;background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:20px;color:var(--text-primary);font-size:12.5px;width:190px;
+  transition:background .2s,border-color .2s,color .2s;
 }
 .table-search:focus{outline:none;border-color:#60a5fa}
 .table-search::placeholder{color:#4b5563}
 .table-filter-btn{
   display:inline-flex;align-items:center;gap:3px;
-  padding:5px 10px;background:#374151;border:1px solid #374151;
-  border-radius:20px;color:#9ca3af;font-size:12px;cursor:pointer;
+  padding:5px 10px;background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:20px;color:var(--text-muted);font-size:12px;cursor:pointer;
   white-space:nowrap;transition:all .15s;
 }
 .table-filter-btn:hover{border-color:#3d5a80;color:#f9fafb}
 .table-filter-btn.active-filter{border-color:#8b5cf6;color:#a78bfa;background:rgba(139,92,246,.1)}
-.task-table-wrap{background:#1f2937;border:1px solid #374151;border-radius:12px;overflow:hidden}
+.task-table-wrap{background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:background .2s,border-color .2s}
 .task-table{width:100%;border-collapse:collapse;font-size:13px}
 .task-table th{
   padding:9px 14px;text-align:right;
-  font-size:11px;font-weight:600;color:#6b7280;
+  font-size:11px;font-weight:600;color:var(--text-dim);
   letter-spacing:.4px;text-transform:uppercase;
-  background:#1e2d42;border-bottom:1px solid #374151;
+  background:var(--bg-elevated);transition:background .2s,color .2s;border-bottom:1px solid #374151;
   white-space:nowrap;cursor:pointer;user-select:none;
 }
 .task-table th:hover{color:#9ca3af}
 .task-table th.sorted{color:#a78bfa}
 .sort-arrow{margin-right:3px;font-size:10px}
 .task-table td{
-  padding:11px 14px;border-bottom:1px solid #1f2937;
-  color:#e5e7eb;vertical-align:middle;
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  color:var(--text-secondary);vertical-align:middle;
   font-size:14px;
+  transition:color .2s,border-color .2s;
 }
 .task-table tr:last-child td{border-bottom:none}
-.task-table tbody tr:hover td{background:#374151;cursor:pointer}
+.task-table tbody tr:hover td{background:var(--bg-hover);cursor:pointer}
 .task-table tr.t-done .task-title-cell{text-decoration:line-through;text-decoration-color:#6b7280;color:#9ca3af;font-size:13.5px}
 .task-table tr.t-done td{opacity:1;color:#9ca3af}
 .task-check-cell{width:44px;padding:8px 4px!important;vertical-align:middle}
@@ -500,8 +544,9 @@ textarea{resize:vertical}
 #panel-overlay.show{display:block}
 #detail-panel{
   position:fixed;top:0;left:0;bottom:0;width:460px;max-width:94vw;
-  background:#1f2937;border-right:1px solid #374151;
+  background:var(--bg-surface);border-right:1px solid var(--border);
   z-index:400;display:flex;flex-direction:column;
+  transition:background .2s,border-color .2s;
   transform:translateX(-110%);transition:transform .25s cubic-bezier(.4,0,.2,1);
   box-shadow:4px 0 24px rgba(0,0,0,.5);
 }
@@ -548,8 +593,8 @@ textarea{resize:vertical}
 .subtask-list{display:flex;flex-direction:column;gap:4px;margin-bottom:7px}
 .subtask-row{
   display:flex;align-items:center;gap:6px;padding:7px 10px;
-  background:#374151;border:1px solid #374151;border-radius:6px;font-size:13px;
-  transition:background .15s,opacity .15s,transform .15s;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;font-size:13px;
+  transition:background .15s,opacity .15s,border-color .2s,transform .15s;
 }
 .subtask-row.dragging{opacity:.4}
 .subtask-row.drag-over{border-color:#8b5cf6;background:rgba(139,92,246,.08)}
@@ -591,7 +636,7 @@ textarea{resize:vertical}
 
 /* MILESTONES */
 .milestone-list{display:flex;flex-direction:column;gap:5px;margin-bottom:7px}
-.milestone-card{background:#374151;border:1px solid #374151;border-radius:8px;padding:10px 12px}
+.milestone-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:background .2s,border-color .2s}
 .milestone-header{display:flex;align-items:center;gap:7px;margin-bottom:5px}
 .milestone-name{font-size:13px;font-weight:500;color:#f9fafb;flex:1}
 .milestone-date{font-size:11px;color:#6b7280}
@@ -796,8 +841,9 @@ textarea{resize:vertical}
    DASHBOARD
 ═══════════════════════════════════ */
 .kpi-card{
-  background:#1f2937;border:1px solid #374151;border-radius:12px;
+  background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;
   padding:16px;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;
+  transition:background .2s,border-color .2s;
 }
 .kpi-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px}
 .kpi-num{font-size:28px;font-weight:700;color:#f9fafb;line-height:1.1}
@@ -918,11 +964,12 @@ textarea{resize:vertical}
 .page-cover{
   position:relative;
   width:100%;height:200px;
-  background:#111827;
+  background:var(--bg-base);
   border-radius:12px;
   overflow:hidden;
   margin-bottom:0;
   flex-shrink:0;
+  transition:background .2s;
   display:flex;align-items:center;justify-content:center;
 }
 .page-cover img{
@@ -962,9 +1009,9 @@ textarea{resize:vertical}
   border-radius:12px;
   display:flex;align-items:center;justify-content:center;
   font-size:38px;line-height:1;
-  background:#374151;
-  border:2px solid #4b5563;
-  transition:border-color .15s;
+  background:var(--bg-elevated);
+  border:2px solid var(--border-light);
+  transition:border-color .15s,background .2s;
   overflow:hidden;
   flex-shrink:0;
 }
@@ -1169,8 +1216,9 @@ textarea{resize:vertical}
 .sidebar-ws-icon{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 .sidebar-ws-name{
   flex:1;font-size:11.5px;font-weight:600;
-  color:#6b7280;letter-spacing:.3px;
+  color:var(--text-dim);letter-spacing:.3px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:color .2s;
 }
 .sidebar-ws-toggle{
   font-size:10px;color:#4b5563;
@@ -1198,7 +1246,7 @@ textarea{resize:vertical}
   flex-shrink:0;
 }
 .proj-nav-icon{font-size:13px;flex-shrink:0;line-height:1}
-.proj-nav-name{color:#e5e7eb!important;
+.proj-nav-name{color:var(--text-secondary)!important;
   flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-size:13px;
 }
@@ -1268,8 +1316,9 @@ textarea{resize:vertical}
 
 /* ══ PROJECTS TREE TABLE ══ */
 .proj-tree-table-wrap{
-  background:#1f2937;border:1px solid #374151;
+  background:var(--bg-surface);border:1px solid var(--border);
   border-radius:12px;overflow:hidden;
+  transition:background .2s,border-color .2s;
 }
 .proj-tree-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .proj-tree-table thead th{
@@ -1363,7 +1412,7 @@ textarea{resize:vertical}
   display:inline-flex;align-items:center;gap:4px;
   padding:3px 8px;
   border-radius:6px;
-  color:#6b7280;
+  color:var(--text-dim);
   cursor:pointer;
   transition:all .15s;
   white-space:nowrap;
@@ -1371,8 +1420,8 @@ textarea{resize:vertical}
   user-select:none;
 }
 .bc-item:hover{
-  background:#374151;
-  color:#e5e7eb;
+  background:var(--bg-hover);
+  color:var(--text-secondary);
   cursor:pointer;
 }
 .bc-icon{
@@ -1500,144 +1549,54 @@ tr:hover .task-row-actions{opacity:1}
 .subtask-ms-rows{display:flex;flex-direction:column;gap:5px;padding-right:4px}
 
 
+
 /* ══════════════════════════════════════════════
-   LIGHT MODE (الوضع النهاري)
-   Maps the dark palette to a light, glare-friendly one
-   via attribute-substring overrides + class targeting.
+   LIGHT MODE (الوضع النهاري) — invert-based
+   The whole page is flipped via filter:invert(); then
+   specific elements with their own meaningful colors
+   (photos, gradients, priority/status badges, accents)
+   are counter-inverted so they display their TRUE colors
+   instead of the flipped/washed-out version.
    ══════════════════════════════════════════════ */
-html.light-mode body{ background:#f3f4f6 !important; }
-
-/* ── Page backgrounds ── */
-html.light-mode #app,
-html.light-mode #content{ background:#f3f4f6 !important; }
-
-/* Surfaces: cards, sidebar, modals, tables */
-html.light-mode #sidebar,
-html.light-mode #topbar,
-html.light-mode .modal,
-html.light-mode .card,
-html.light-mode .kpi-card,
-html.light-mode .journal-entry,
-html.light-mode .journal-new-card,
-html.light-mode .task-table-wrap,
-html.light-mode .proj-tree-table-wrap,
-html.light-mode .resource-card,
-html.light-mode .relation-row,
-html.light-mode .recurring-row,
-html.light-mode .ws-page-card,
-html.light-mode [style*="background:#1f2937"],
-html.light-mode [style*="background: #1f2937"]{
-  background:#ffffff !important;
-  border-color:#e5e7eb !important;
+html.light-mode{
+  filter: invert(1) hue-rotate(180deg);
+  background:#0b0f1a; /* matches body so no white flash at edges */
+}
+html.light-mode body{
+  background:#0b0f1a;
 }
 
-/* Elevated / secondary surfaces */
-html.light-mode .task-table th,
-html.light-mode .editor-toolbar,
-html.light-mode .notes-table th,
-html.light-mode .note-editor-header,
-html.light-mode .table-toolbar,
-html.light-mode .proj-tree-table thead th,
-html.light-mode .view-controls,
-html.light-mode [style*="background:#374151"],
-html.light-mode [style*="background: #374151"]{
-  background:#f3f4f6 !important;
-  border-color:#e5e7eb !important;
-}
-
-/* ── Text colors ── */
-html.light-mode [style*="color:#f9fafb"],
-html.light-mode [style*="color: #f9fafb"],
-html.light-mode [style*="color:#e5e7eb"],
-html.light-mode [style*="color: #e5e7eb"],
-html.light-mode [style*="color:#d1d5db"],
-html.light-mode [style*="color: #d1d5db"]{
-  color:#111827 !important;
-}
-html.light-mode [style*="color:#9ca3af"],
-html.light-mode [style*="color: #9ca3af"]{
-  color:#4b5563 !important;
-}
-html.light-mode [style*="color:#6b7280"],
-html.light-mode [style*="color: #6b7280"]{
-  color:#6b7280 !important; /* mid-gray remains readable on white */
-}
-html.light-mode [style*="color:#4b5563"],
-html.light-mode [style*="color: #4b5563"]{
-  color:#374151 !important;
-}
-
-/* ── Borders ── */
-html.light-mode [style*="border-color:#374151"],
-html.light-mode [style*="border-color: #374151"],
-html.light-mode [style*="border-color:#4b5563"],
-html.light-mode [style*="border-color: #4b5563"],
-html.light-mode [style*="border:1px solid #374151"],
-html.light-mode [style*="border: 1px solid #374151"]{
-  border-color:#e5e7eb !important;
-}
-
-/* ── Base element text/colors via classes ── */
-html.light-mode body,
-html.light-mode h1, html.light-mode h2, html.light-mode h3,
-html.light-mode p, html.light-mode span, html.light-mode div,
-html.light-mode td, html.light-mode th, html.light-mode label{
-  color:#1f2937;
-}
-
-/* Inputs & selects */
-html.light-mode input,
-html.light-mode select,
-html.light-mode textarea,
-html.light-mode .form-input,
-html.light-mode .form-select,
-html.light-mode .table-search,
-html.light-mode .panel-select,
-html.light-mode #global-search{
-  background:#f9fafb !important;
-  border-color:#d1d5db !important;
-  color:#111827 !important;
-}
-html.light-mode input::placeholder,
-html.light-mode textarea::placeholder{ color:#9ca3af !important; }
-
-/* Buttons (ghost / secondary) */
-html.light-mode .btn-ghost,
-html.light-mode [style*="background:#374151"][style*="border"]{
-  background:#f3f4f6 !important;
-  color:#374151 !important;
-}
-
-/* Nav items */
-html.light-mode .nav-item{ color:#4b5563; }
-html.light-mode .nav-item:hover{ background:#f3f4f6 !important; }
-html.light-mode .nav-icon{ color:#6b7280 !important; }
-
-/* Cover images: dark placeholder bg should become light */
-html.light-mode .page-cover,
-html.light-mode .page-icon{
-  background:#f3f4f6 !important;
-}
-
-/* Priority badges, status pills — keep their accent colors but ensure contrast */
+/* ── Counter-invert: restores TRUE colors (cancels the page-level flip) ── */
+html.light-mode img,
+html.light-mode video,
+html.light-mode iframe,
+html.light-mode .page-cover-actions,
 html.light-mode .priority-badge,
 html.light-mode .subtask-count-badge,
 html.light-mode .nav-badge,
 html.light-mode .res-status-badge,
-html.light-mode .table-filter-btn{
-  filter: none;
+html.light-mode .res-type-badge,
+html.light-mode .milestone-date,
+html.light-mode .table-filter-btn.active-filter,
+html.light-mode #archive-toggle-btn,
+html.light-mode .btn-accent,
+html.light-mode .add-subtask-btn,
+html.light-mode #bulk-toolbar,
+html.light-mode mark{
+  filter: invert(1) hue-rotate(180deg);
 }
 
-/* Scrollbar */
-html.light-mode ::-webkit-scrollbar-track{ background:#f3f4f6; }
-html.light-mode ::-webkit-scrollbar-thumb{ background:#d1d5db; }
+/* Gradient covers: counter-invert the color, but the wrapping box stays normal */
+html.light-mode .page-cover > div[style*="background:linear-gradient"],
+html.light-mode .page-cover > div[style*="background: linear-gradient"]{
+  filter: invert(1) hue-rotate(180deg);
+}
 
-/* Toggle track in light mode for visibility */
-html.light-mode #light-mode-track{ border:1px solid #d1d5db; }
-
-/* Archive / dimmed rows stay dimmed but readable */
-html.light-mode .t-done td,
-html.light-mode .archived-row td{ color:#9ca3af !important; }
+/* Re-invert images/icons INSIDE counter-inverted badges back to true colors (double negative) */
+html.light-mode .priority-badge img,
+html.light-mode .nav-badge img{
+  filter: invert(1) hue-rotate(180deg);
+}
 </style>
 
 <body>
@@ -2844,6 +2803,50 @@ html.light-mode .archived-row td{ color:#9ca3af !important; }
 <div id="toast"></div>
 
 <script>
+// ════════════════════════════════════════════════════════════════
+// مُنجز — TABLE OF CONTENTS
+// ────────────────────────────────────────────────────────────────
+// Ctrl+F any section name below (e.g. "TASK DETAIL PANEL") to jump
+// to that block — each one is marked with the same ══ header style.
+// ────────────────────────────────────────────────────────────────
+//  1. DATA MODEL — per-project          → PROJECTS, WORKSPACES, global state
+//  2. NAVIGATION                        → nav(), view switching
+//  3. TASK VIEWS                        → list/table rendering, filters, archive
+//  4. KANBAN DRAG & DROP                → board columns, drag handlers
+//  5. TASKS (list modal save)           → unified add/edit task modal
+//  6. BRAIN DUMP                        → quick-capture inbox UI
+//  7. BRAIN DUMP PERSISTENCE            → DUMP_ITEMS save/restore
+//  8. PROJECTS                          → CRUD, rename, archive, move
+//  9. PROJECTS RENDER + MANAGE          → project tree, sidebar sync
+// 10. SEARCH                            → global search across all data
+// 11. MODALS                            → open/close, shared modal logic
+// 12. MOBILE SIDEBAR                    → responsive sidebar toggle
+// 13. TOAST                             → showToast() notifications
+// 14. AUTO SAVE                         → autoSaveData(), localStorage
+// 15. UI HELPERS                        → panel-save indicator, shortcuts
+// 16. EXPORT / IMPORT                   → JSON/Excel export & import
+// 17. EISENHOWER + DASHBOARD HELPERS    → shared data-prep functions
+// 18. EISENHOWER MATRIX                 → urgent/important quadrants
+// 19. DASHBOARD RENDERING               → KPIs, charts, summaries
+// 20. TASK RELATIONS                    → linked-task graph
+// 21. RECURRING TASKS                   → auto-create on schedule
+// 22. PROJECT GROUPS                    → workspace ↔ project linking
+// 23. TASK DETAIL PANEL                 → side panel: fields, subtasks, milestones
+// 24. TASK ACTIONS                      → duplicate, delete, archive
+// 25. BULK ACTIONS                      → multi-select operations
+// 26. NOTIFICATIONS                     → browser Notification API
+// 27. JOURNAL                           → daily entries
+// 28. LEARNING RESOURCES                → resource list + progress
+// 29. RESOURCE DETAIL + RICH EDITOR     → notebook, formatting toolbar
+// 30. PWA — MANIFEST + SERVICE WORKER   → offline/installable setup
+// 31. COVER + ICON SYSTEM               → image/emoji pickers
+// 32. WORKSPACES                        → workspace CRUD, sidebar groups
+// 33. THEME CONTROLLER                  → accent/background/font-size
+//     + LIGHT MODE (داخل النهار)        → day-mode CSS variable overrides
+// 34. BREADCRUMB SYSTEM                 → navigation trail builder
+// ════════════════════════════════════════════════════════════════
+
+
 
 // ══════════════════════════════════════
 // DATA MODEL — per-project
@@ -3132,10 +3135,6 @@ function renderTaskList() {
             : '<span style="width:18px;display:inline-block"></span>';
           const subsBadge = hasSubs
             ? `<span class="subtask-count-badge">${subsDone}/${subs.length}</span>` : '';
-          const taskMs = (proj.milestones||[]).filter(m => m.taskIds?.includes(t.id));
-          const msBadge = taskMs.length
-            ? taskMs.map(m => `<span class="subtask-count-badge" style="background:rgba(167,139,250,.12);color:#a78bfa;max-width:140px;overflow:hidden;text-overflow:ellipsis;display:inline-block;white-space:nowrap;vertical-align:bottom" title="${m.name}">🚩 ${m.name}</span>`).join(' ')
-            : '';
           const mainRow = `<tr class="${t.done?'t-done':''}" data-task-id="${t.id}" style="cursor:pointer">
             <td class="task-check-cell">
               <div style="display:flex;align-items:center;justify-content:center;gap:3px">
@@ -3149,7 +3148,7 @@ function renderTaskList() {
               </div>
             </td>
             <td class="task-title-cell">
-              <span onclick="openDetailPanel('${t.id}')" ondblclick="event.stopPropagation();inlineEditTask('${t.id}',this)" class="task-title-span" title="اضغط للتفاصيل — اضغط مرتين للتعديل">${impBadge} ${t.title} ${msBadge} ${subsBadge}</span>
+              <span onclick="openDetailPanel('${t.id}')" ondblclick="event.stopPropagation();inlineEditTask('${t.id}',this)" class="task-title-span" title="اضغط للتفاصيل — اضغط مرتين للتعديل">${impBadge} ${t.title} ${subsBadge}</span>
               <span class="task-row-actions">
                 <button onclick="event.stopPropagation();archiveTask('${t.id}')" class="task-row-btn" title="أرشفة المهمة" style="color:#6b7280">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -3167,14 +3166,15 @@ function renderTaskList() {
             <td class="task-date-cell${overdue?' overdue':''}">${dateStr||'—'}${overdue?' ⚠':''}</td>
           </tr>`;
           const subCheckSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
-          const subRows = subs.map((s, si) => {
+          const flagSvg = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>`;
+
+          const subRowHTML = (s, isLast) => {
             const sDone = s.done || false;
-            const isLast = si === subs.length - 1;
-            return `<tr class="subtask-tr hidden" data-parent="${t.id}" data-sub-id="${s.id||si}">
+            return `<tr class="subtask-tr hidden" data-parent="${t.id}" data-sub-id="${s.id}">
               <td class="task-check-cell">
                 <div style="display:flex;align-items:center;justify-content:center;gap:3px">
                   <span style="width:18px;display:inline-block"></span>
-                  <div onclick="event.stopPropagation();toggleSubtask('${t.id}','${s.id||si}')" style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${sDone?'#34d399':'#4b5563'};background:${sDone?'#34d399':'#374151'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                  <div onclick="event.stopPropagation();toggleSubtask('${t.id}','${s.id}')" style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${sDone?'#34d399':'#4b5563'};background:${sDone?'#34d399':'#374151'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
                     ${sDone?subCheckSvg:''}
                   </div>
                 </div>
@@ -3187,7 +3187,47 @@ function renderTaskList() {
               </td>
               <td></td><td></td><td></td>
             </tr>`;
-          }).join('');
+          };
+
+          const msHeaderHTML = (ms, doneCount, total) => {
+            const pct = total ? Math.round(doneCount/total*100) : 0;
+            return `<tr class="subtask-tr hidden" data-parent="${t.id}">
+              <td></td>
+              <td class="task-title-cell" style="padding-top:8px">
+                <div style="display:flex;align-items:center;gap:8px;padding-right:28px">
+                  <span style="color:#a78bfa">${flagSvg}</span>
+                  <span style="font-size:12.5px;font-weight:600;color:#d1d5db">${ms.name}</span>
+                  <div style="flex:1;height:3px;background:#374151;border-radius:2px;overflow:hidden;max-width:60px">
+                    <div style="height:100%;width:${pct}%;background:#8b5cf6;border-radius:2px"></div>
+                  </div>
+                  <span style="font-size:11px;color:#a78bfa;white-space:nowrap">${doneCount}/${total}</span>
+                </div>
+              </td>
+              <td></td><td></td><td></td>
+            </tr>`;
+          };
+
+          // Group subtasks by milestone (milestones linked to this task)
+          const taskMilestones = (proj.milestones||[]).filter(m => m.taskIds?.includes(t.id));
+          let subRows = '';
+          if (taskMilestones.length) {
+            const grouped = {};
+            const unassigned = [];
+            subs.forEach(s => {
+              if (s.milestoneId && taskMilestones.find(m=>m.id===s.milestoneId)) {
+                (grouped[s.milestoneId] = grouped[s.milestoneId] || []).push(s);
+              } else unassigned.push(s);
+            });
+            taskMilestones.forEach(ms => {
+              const items = grouped[ms.id] || [];
+              const done = items.filter(s=>s.done).length;
+              subRows += msHeaderHTML(ms, done, items.length);
+              subRows += items.map((s,i) => subRowHTML(s, i===items.length-1)).join('');
+            });
+            subRows += unassigned.map((s,i) => subRowHTML(s, i===unassigned.length-1)).join('');
+          } else {
+            subRows = subs.map((s,i) => subRowHTML(s, i===subs.length-1)).join('');
+          }
           return mainRow + subRows;
         }).join('')}
       </tbody>
@@ -4512,7 +4552,7 @@ document.querySelectorAll('.nav-item[role="button"]').forEach(el => {
 // ══════════════════════════════════════
 
 // ══════════════════════════════════════
-// MISSING FUNCTIONS (referenced but not defined)
+// UI HELPERS (panel save indicator, workspace shortcuts)
 // ══════════════════════════════════════
 
 function showPanelSaved() {
@@ -4871,8 +4911,8 @@ function refreshSidebarProjects() {
 
 // Init — render first project list on load
 document.addEventListener('DOMContentLoaded', () => {
-  // Sync light mode toggle UI with restored class
-  if (document.documentElement.classList.contains('light-mode')) {
+  // Sync light mode toggle UI with restored attribute
+  if (document.documentElement.getAttribute('data-theme') === 'light') {
     const toggle = document.getElementById('light-mode-toggle');
     if (toggle) toggle.checked = true;
     const track = document.getElementById('light-mode-track');
@@ -4922,7 +4962,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 // ══════════════════════════════════════
-// STAGE 3 — DATA
+// EISENHOWER + DASHBOARD DATA HELPERS
 // ══════════════════════════════════════
 let RELATIONS = [];
 let RECURRING = [];
@@ -5037,7 +5077,7 @@ function renderEisenhower() {
 }
 
 // ══════════════════════════════════════
-// STAGE 3 — DASHBOARD
+// DASHBOARD RENDERING
 // ══════════════════════════════════════
 function renderDashboard() {
   const now = new Date();
@@ -5154,7 +5194,7 @@ function renderDashboard() {
 }
 
 // ══════════════════════════════════════
-// STAGE 3 — RELATIONS
+// TASK RELATIONS
 // ══════════════════════════════════════
 const REL_LABELS = {
   blocks:'تعطل ◀', blocked_by:'معطلة بواسطة ◀',
@@ -5305,7 +5345,7 @@ function openRelationModal() {
 }
 
 // ══════════════════════════════════════
-// STAGE 3 — RECURRING TASKS
+// RECURRING TASKS
 // ══════════════════════════════════════
 function getNextRun(rec) {
   const freqDays = {daily:1, weekly:7, monthly:30, custom: rec.customDays||3};
@@ -5558,7 +5598,7 @@ function assignProjectToGroup(projId, groupId) {
 }
 
 // ══════════════════════════════════════
-// STAGE 2 — TASK DETAIL PANEL
+// TASK DETAIL PANEL
 // ══════════════════════════════════════
 let currentPanelTaskId = null;
 
@@ -6232,7 +6272,7 @@ function wireTaskRows() { /* handled inline */ }
 // wireTaskRows is called from setTaskView after render
 
 // ══════════════════════════════════════
-// STAGE 2 — JOURNAL
+// JOURNAL
 // ══════════════════════════════════════
 let JOURNAL = [];
 let journalLinkedTaskId = null;
@@ -6329,7 +6369,7 @@ function deleteJournalEntry(id) {
 }
 
 // ══════════════════════════════════════
-// STAGE 2 — LEARNING RESOURCES
+// LEARNING RESOURCES
 // ══════════════════════════════════════
 let RESOURCES = [];
 
@@ -7642,20 +7682,23 @@ setInterval(() => autoSaveData(), 60000);
 // THEME CONTROLLER
 // ══════════════════════════════════════
 
+// ── LIGHT MODE (الوضع النهاري) — toggles [data-theme="light"] on <html> ──
 function toggleLightMode(on) {
   const html = document.documentElement;
   const track = document.getElementById('light-mode-track');
   const knob = document.getElementById('light-mode-knob');
   if (on) {
     html.classList.add('light-mode');
+    html.setAttribute('data-theme', 'light');
     if (track) track.style.background = '#fbbf24';
     if (knob) { knob.style.transform = 'translateX(18px)'; knob.style.background = '#fff'; }
   } else {
     html.classList.remove('light-mode');
-    if (track) track.style.background = '#4b5563';
-    if (knob) { knob.style.transform = 'translateX(0)'; knob.style.background = '#9ca3af'; }
+    html.removeAttribute('data-theme');
+    if (track) { track.style.background = 'var(--border-light)'; }
+    if (knob) { knob.style.transform = 'translateX(0)'; knob.style.background = 'var(--text-dim)'; }
   }
-  try { localStorage.setItem('munjiz-light-mode', on ? '1' : '0'); } catch(e){}
+  try { localStorage.setItem('munjiz-theme', on ? 'light' : 'dark'); } catch(e){}
 }
 
 function toggleThemePanel() {
@@ -7829,6 +7872,10 @@ function setFontSize(size) {
 // Restore saved theme on load
 (function() {
   try {
+    if (localStorage.getItem('munjiz-theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.classList.add('light-mode');
+    }
     const acc = JSON.parse(localStorage.getItem('munjiz-accent'));
     if (acc) applyAccentColor(acc.accent, acc.accentText, acc.dim);
     const bg = JSON.parse(localStorage.getItem('munjiz-bg'));
@@ -7842,10 +7889,6 @@ function setFontSize(size) {
       window.event = savedEvent;
     } else {
       setFontSize(16); // Apply default overrides
-    }
-    // Restore light mode immediately (avoid flash of dark theme)
-    if (localStorage.getItem('munjiz-light-mode') === '1') {
-      document.documentElement.classList.add('light-mode');
     }
   } catch(e) {}
 })();
@@ -7984,27 +8027,29 @@ function updateTopbarBreadcrumb(page) {
 
 <!-- THEME PANEL -->
 <div id="theme-panel" style="display:none;position:fixed;bottom:0;left:0;width:260px;
-  background:#1f2937;border:1px solid #4b5563;border-radius:14px 14px 0 0;
+  background:var(--bg-surface);border:1px solid var(--border-light);border-radius:14px 14px 0 0;
   box-shadow:0 -8px 32px rgba(0,0,0,.5);z-index:300;padding:18px;
-  transition:transform .25s cubic-bezier(.4,0,.2,1)">
+  transition:transform .25s cubic-bezier(.4,0,.2,1),background .2s,border-color .2s">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <span style="font-size:14px;font-weight:600;color:#f9fafb">تخصيص المظهر</span>
-    <button onclick="toggleThemePanel()" style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:18px">×</button>
+    <span style="font-size:14px;font-weight:600;color:var(--text-primary)">تخصيص المظهر</span>
+    <button onclick="toggleThemePanel()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px">×</button>
   </div>
 
   <!-- Daytime / Light mode toggle -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:10px 12px;background:#374151;border-radius:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:10px 12px;background:var(--bg-elevated);border-radius:10px;transition:background .2s">
     <div style="display:flex;align-items:center;gap:8px">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      <span style="font-size:13px;color:#e5e7eb">الوضع النهاري</span>
+      <span style="font-size:13px;color:var(--text-secondary)">الوضع النهاري</span>
     </div>
     <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
       <input type="checkbox" id="light-mode-toggle" onchange="toggleLightMode(this.checked)" style="opacity:0;width:0;height:0">
-      <span id="light-mode-track" style="position:absolute;inset:0;background:#4b5563;border-radius:22px;transition:.2s">
-        <span id="light-mode-knob" style="position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#9ca3af;border-radius:50%;transition:.2s"></span>
+      <span id="light-mode-track" style="position:absolute;inset:0;background:var(--border-light);border-radius:22px;transition:.2s">
+        <span id="light-mode-knob" style="position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--text-dim);border-radius:50%;transition:.2s"></span>
       </span>
     </label>
   </div>
+
+
 
   <div style="margin-bottom:14px">
     <div style="font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">لون الإضافة</div>
