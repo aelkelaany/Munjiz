@@ -1500,22 +1500,144 @@ tr:hover .task-row-actions{opacity:1}
 .subtask-ms-rows{display:flex;flex-direction:column;gap:5px;padding-right:4px}
 
 
-/* ══ LIGHT MODE (داخل النهار) ══ */
-html.light-mode{
-  filter: invert(1) hue-rotate(180deg);
+/* ══════════════════════════════════════════════
+   LIGHT MODE (الوضع النهاري)
+   Maps the dark palette to a light, glare-friendly one
+   via attribute-substring overrides + class targeting.
+   ══════════════════════════════════════════════ */
+html.light-mode body{ background:#f3f4f6 !important; }
+
+/* ── Page backgrounds ── */
+html.light-mode #app,
+html.light-mode #content{ background:#f3f4f6 !important; }
+
+/* Surfaces: cards, sidebar, modals, tables */
+html.light-mode #sidebar,
+html.light-mode #topbar,
+html.light-mode .modal,
+html.light-mode .card,
+html.light-mode .kpi-card,
+html.light-mode .journal-entry,
+html.light-mode .journal-new-card,
+html.light-mode .task-table-wrap,
+html.light-mode .proj-tree-table-wrap,
+html.light-mode .resource-card,
+html.light-mode .relation-row,
+html.light-mode .recurring-row,
+html.light-mode .ws-page-card,
+html.light-mode [style*="background:#1f2937"],
+html.light-mode [style*="background: #1f2937"]{
+  background:#ffffff !important;
+  border-color:#e5e7eb !important;
 }
-/* Counter-invert images, icons, and anything with photo content so they look normal */
-html.light-mode img,
-html.light-mode .page-cover img,
-html.light-mode .page-icon img,
-html.light-mode video,
-html.light-mode iframe{
-  filter: invert(1) hue-rotate(180deg);
+
+/* Elevated / secondary surfaces */
+html.light-mode .task-table th,
+html.light-mode .editor-toolbar,
+html.light-mode .notes-table th,
+html.light-mode .note-editor-header,
+html.light-mode .table-toolbar,
+html.light-mode .proj-tree-table thead th,
+html.light-mode .view-controls,
+html.light-mode [style*="background:#374151"],
+html.light-mode [style*="background: #374151"]{
+  background:#f3f4f6 !important;
+  border-color:#e5e7eb !important;
 }
-/* Slightly soften pure white background to reduce glare */
-html.light-mode body{
-  background:#f3f4f6;
+
+/* ── Text colors ── */
+html.light-mode [style*="color:#f9fafb"],
+html.light-mode [style*="color: #f9fafb"],
+html.light-mode [style*="color:#e5e7eb"],
+html.light-mode [style*="color: #e5e7eb"],
+html.light-mode [style*="color:#d1d5db"],
+html.light-mode [style*="color: #d1d5db"]{
+  color:#111827 !important;
 }
+html.light-mode [style*="color:#9ca3af"],
+html.light-mode [style*="color: #9ca3af"]{
+  color:#4b5563 !important;
+}
+html.light-mode [style*="color:#6b7280"],
+html.light-mode [style*="color: #6b7280"]{
+  color:#6b7280 !important; /* mid-gray remains readable on white */
+}
+html.light-mode [style*="color:#4b5563"],
+html.light-mode [style*="color: #4b5563"]{
+  color:#374151 !important;
+}
+
+/* ── Borders ── */
+html.light-mode [style*="border-color:#374151"],
+html.light-mode [style*="border-color: #374151"],
+html.light-mode [style*="border-color:#4b5563"],
+html.light-mode [style*="border-color: #4b5563"],
+html.light-mode [style*="border:1px solid #374151"],
+html.light-mode [style*="border: 1px solid #374151"]{
+  border-color:#e5e7eb !important;
+}
+
+/* ── Base element text/colors via classes ── */
+html.light-mode body,
+html.light-mode h1, html.light-mode h2, html.light-mode h3,
+html.light-mode p, html.light-mode span, html.light-mode div,
+html.light-mode td, html.light-mode th, html.light-mode label{
+  color:#1f2937;
+}
+
+/* Inputs & selects */
+html.light-mode input,
+html.light-mode select,
+html.light-mode textarea,
+html.light-mode .form-input,
+html.light-mode .form-select,
+html.light-mode .table-search,
+html.light-mode .panel-select,
+html.light-mode #global-search{
+  background:#f9fafb !important;
+  border-color:#d1d5db !important;
+  color:#111827 !important;
+}
+html.light-mode input::placeholder,
+html.light-mode textarea::placeholder{ color:#9ca3af !important; }
+
+/* Buttons (ghost / secondary) */
+html.light-mode .btn-ghost,
+html.light-mode [style*="background:#374151"][style*="border"]{
+  background:#f3f4f6 !important;
+  color:#374151 !important;
+}
+
+/* Nav items */
+html.light-mode .nav-item{ color:#4b5563; }
+html.light-mode .nav-item:hover{ background:#f3f4f6 !important; }
+html.light-mode .nav-icon{ color:#6b7280 !important; }
+
+/* Cover images: dark placeholder bg should become light */
+html.light-mode .page-cover,
+html.light-mode .page-icon{
+  background:#f3f4f6 !important;
+}
+
+/* Priority badges, status pills — keep their accent colors but ensure contrast */
+html.light-mode .priority-badge,
+html.light-mode .subtask-count-badge,
+html.light-mode .nav-badge,
+html.light-mode .res-status-badge,
+html.light-mode .table-filter-btn{
+  filter: none;
+}
+
+/* Scrollbar */
+html.light-mode ::-webkit-scrollbar-track{ background:#f3f4f6; }
+html.light-mode ::-webkit-scrollbar-thumb{ background:#d1d5db; }
+
+/* Toggle track in light mode for visibility */
+html.light-mode #light-mode-track{ border:1px solid #d1d5db; }
+
+/* Archive / dimmed rows stay dimmed but readable */
+html.light-mode .t-done td,
+html.light-mode .archived-row td{ color:#9ca3af !important; }
 </style>
 
 <body>
@@ -3012,7 +3134,7 @@ function renderTaskList() {
             ? `<span class="subtask-count-badge">${subsDone}/${subs.length}</span>` : '';
           const taskMs = (proj.milestones||[]).filter(m => m.taskIds?.includes(t.id));
           const msBadge = taskMs.length
-            ? `<span class="subtask-count-badge" style="background:rgba(167,139,250,.12);color:#a78bfa" title="${taskMs.map(m=>m.name).join(', ')}">🚩 ${taskMs.length}</span>`
+            ? taskMs.map(m => `<span class="subtask-count-badge" style="background:rgba(167,139,250,.12);color:#a78bfa;max-width:140px;overflow:hidden;text-overflow:ellipsis;display:inline-block;white-space:nowrap;vertical-align:bottom" title="${m.name}">🚩 ${m.name}</span>`).join(' ')
             : '';
           const mainRow = `<tr class="${t.done?'t-done':''}" data-task-id="${t.id}" style="cursor:pointer">
             <td class="task-check-cell">
