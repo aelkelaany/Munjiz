@@ -33,21 +33,6 @@
   --border-light:#4b5563;
 }
 
-[data-theme="light"]{
-  --bg-base:#f3f4f6;
-  --bg-surface:#ffffff;
-  --bg-elevated:#f3f4f6;
-  --bg-hover:#e5e7eb;
-
-  --text-primary:#111827;
-  --text-secondary:#1f2937;
-  --text-muted:#6b7280;
-  --text-dim:#9ca3af;
-
-  --border:#e5e7eb;
-  --border-light:#d1d5db;
-}
-
 
 /* ═══════════════════════════════════
    RESET
@@ -4911,8 +4896,8 @@ function refreshSidebarProjects() {
 
 // Init — render first project list on load
 document.addEventListener('DOMContentLoaded', () => {
-  // Sync light mode toggle UI with restored attribute
-  if (document.documentElement.getAttribute('data-theme') === 'light') {
+  // Sync light mode toggle UI with restored class
+  if (document.documentElement.classList.contains('light-mode')) {
     const toggle = document.getElementById('light-mode-toggle');
     if (toggle) toggle.checked = true;
     const track = document.getElementById('light-mode-track');
@@ -7682,21 +7667,19 @@ setInterval(() => autoSaveData(), 60000);
 // THEME CONTROLLER
 // ══════════════════════════════════════
 
-// ── LIGHT MODE (الوضع النهاري) — toggles [data-theme="light"] on <html> ──
+// ── LIGHT MODE (الوضع النهاري) — toggles .light-mode class on <html> (invert filter) ──
 function toggleLightMode(on) {
   const html = document.documentElement;
   const track = document.getElementById('light-mode-track');
   const knob = document.getElementById('light-mode-knob');
   if (on) {
     html.classList.add('light-mode');
-    html.setAttribute('data-theme', 'light');
     if (track) track.style.background = '#fbbf24';
     if (knob) { knob.style.transform = 'translateX(18px)'; knob.style.background = '#fff'; }
   } else {
     html.classList.remove('light-mode');
-    html.removeAttribute('data-theme');
-    if (track) { track.style.background = 'var(--border-light)'; }
-    if (knob) { knob.style.transform = 'translateX(0)'; knob.style.background = 'var(--text-dim)'; }
+    if (track) { track.style.background = '#4b5563'; }
+    if (knob) { knob.style.transform = 'translateX(0)'; knob.style.background = '#9ca3af'; }
   }
   try { localStorage.setItem('munjiz-theme', on ? 'light' : 'dark'); } catch(e){}
 }
@@ -7873,7 +7856,6 @@ function setFontSize(size) {
 (function() {
   try {
     if (localStorage.getItem('munjiz-theme') === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
       document.documentElement.classList.add('light-mode');
     }
     const acc = JSON.parse(localStorage.getItem('munjiz-accent'));
