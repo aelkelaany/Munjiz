@@ -4222,11 +4222,17 @@ function renderMentionMenu(ta) {
   if (_mentionIdx >= _mentionItems.length) _mentionIdx = _mentionItems.length - 1;
   if (_mentionIdx < 0) _mentionIdx = 0;
 
+  // Snapshot current state for click handlers
+  const snapType = _mentionType;
+  const snapStart = _mentionStart;
+  const snapEnd = _mentionEnd;
+
   menu.innerHTML = `<div class="slash-group-label">${_mentionType === '@' ? '💼' : '📁'} ${title}</div>` +
     _mentionItems.map((item, i) =>
       `<div class="slash-item${i === _mentionIdx ? ' active' : ''}"
-        onmousedown="event.preventDefault();applyMention(${i})"
-        onmouseover="_mentionIdx=${i};renderMentionMenu(document.getElementById('dump-textarea'))">
+        onmousedown="event.preventDefault()"
+        onclick="applyMentionDirect('${snapType}',${snapStart},${snapEnd},'${(item.label||'').replace(/'/g,'\\\'')}','${item.id||''}')"
+        onmouseover="_mentionIdx=${i};Array.from(document.querySelectorAll('#slash-menu .slash-item')).forEach((el,j)=>el.classList.toggle('active',j===${i}))">
         <span class="slash-item-icon">${item.icon}</span>
         <span class="slash-item-label">${item.label || '—'}</span>
         <span class="slash-item-desc">${item.sub}</span>
@@ -4239,41 +4245,36 @@ function renderMentionMenu(ta) {
 
 function applyMention(idx) {
   const item = _mentionItems[idx];
-  if (!item) { closeMentionMenu(); return; }
+  if (!item) return;
+  applyMentionDirect(_mentionType, _mentionStart, _mentionEnd, item.label, item.id || '');
+}
 
+function applyMentionDirect(type, start, end, label, itemId) {
   const ta = document.getElementById('dump-textarea');
-  if (!ta) return;
+  if (!ta || start < 0) return;
 
   const val = ta.value;
-  // Use stored positions from detection time (ta.selectionStart unreliable after click)
-  const before = val.slice(0, _mentionStart);
-  const after = val.slice(_mentionEnd);
+  const before = val.slice(0, start);
+  const after = val.slice(end < 0 ? start : end);
 
   let insert;
-  if (_mentionType === '@') {
-    insert = '@workspace: ' + item.label + '\n';
-    _mentionWsId = item.id || null;
+  if (type === '@') {
+    insert = '@workspace: ' + label + '\n';
+    _mentionWsId = itemId || null;
   } else {
-    insert = '#project: ' + item.label + '\n';
+    insert = '#project: ' + label + '\n';
   }
 
   ta.value = before + insert + after;
   const newPos = before.length + insert.length;
+
+  closeMentionMenu();
+  ta.focus();
   ta.setSelectionRange(newPos, newPos);
 
-  // Close menu and clear state fully
-  _mentionType = null;
-  _mentionFilter = '';
-  _mentionStart = -1;
-  document.getElementById('slash-menu').style.display = 'none';
-
-  ta.focus();
-
-  // Update smart preview after short delay
   setTimeout(() => {
-    const isSmartPattern = /^@workspace:/m.test(ta.value);
-    if (isSmartPattern) buildSmartPreview(ta.value);
-  }, 20);
+    if (/^@workspace:/m.test(ta.value)) buildSmartPreview(ta.value);
+  }, 30);
 }
 
 function closeMentionMenu() {
