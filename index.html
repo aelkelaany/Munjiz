@@ -1582,6 +1582,59 @@ html.light-mode .priority-badge img,
 html.light-mode .nav-badge img{
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* ══ SMART PARSER — Slash Commands ══ */
+.dump-smart-wrap{ position:relative }
+
+#slash-menu{
+  position:absolute;
+  background:#1f2937;border:1px solid #374151;border-radius:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  z-index:600;min-width:240px;
+  overflow:hidden;display:none;
+}
+.slash-group-label{
+  font-size:10.5px;font-weight:700;color:#6b7280;
+  letter-spacing:.5px;padding:8px 12px 4px;
+  border-bottom:1px solid #374151;background:#111827;
+}
+.slash-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;cursor:pointer;font-size:13px;
+  color:#e5e7eb;transition:background .1s;
+  border-bottom:1px solid rgba(55,65,81,.4);
+}
+.slash-item:last-child{border-bottom:none}
+.slash-item:hover,.slash-item.active{background:#374151}
+.slash-item-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.slash-item-label{flex:1;font-weight:500}
+.slash-item-desc{font-size:11px;color:#6b7280}
+
+/* Smart import preview */
+#smart-preview{
+  background:#111827;border:1px solid #374151;border-radius:10px;
+  padding:14px;margin-top:10px;display:none;
+}
+.preview-title{font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.preview-ws{font-size:13px;font-weight:700;color:#f9fafb;padding:4px 0}
+.preview-proj{font-size:12.5px;color:#d1d5db;padding:3px 0 3px 14px;display:flex;align-items:center;gap:6px}
+.preview-task{font-size:12px;color:#9ca3af;padding:2px 0 2px 28px;display:flex;align-items:center;gap:5px}
+.preview-subtask{font-size:11.5px;color:#6b7280;padding:2px 0 2px 42px;display:flex;align-items:center;gap:5px}
+.preview-badge{
+  font-size:10px;padding:1px 6px;border-radius:8px;
+  background:rgba(139,92,246,.15);color:#a78bfa;
+  white-space:nowrap;flex-shrink:0;
+}
+.preview-exists{color:#34d399;font-size:10px}
+.preview-new{color:#60a5fa;font-size:10px}
+.preview-actions{display:flex;gap:8px;margin-top:12px}
+
+/* textarea detection hint */
+.dump-smart-hint{
+  font-size:11px;color:#6b7280;margin-top:6px;
+  display:none;align-items:center;gap:5px;
+}
+.dump-smart-hint.visible{display:flex}
 </style>
 
 <body>
@@ -1719,13 +1772,33 @@ html.light-mode .nav-badge img{
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3.5 6.5V17a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z"/></svg>
             <h2>Brain Dump — فرّغ دماغك</h2>
           </div>
-          <textarea id="dump-textarea" placeholder="اكتب أي فكرة، مهمة، قلق، أو حلم — بدون ترتيب..." rows="4"></textarea>
+          <div class="dump-smart-wrap">
+            <textarea id="dump-textarea"
+              placeholder="اكتب أي فكرة... أو ابدأ بـ @workspace: لإنشاء مشاريع ومهام تلقائياً"
+              rows="4"
+              oninput="onDumpInput(this)"
+              onpaste="setTimeout(()=>onDumpInput(this),10)"
+              onkeydown="onDumpKeydown(event)"></textarea>
+            <div id="slash-menu"></div>
+          </div>
+          <div class="dump-smart-hint" id="dump-smart-hint">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            اكتب <code style="background:#374151;padding:1px 5px;border-radius:4px;font-size:11px">@workspace:</code>
+            ثم <code style="background:#374151;padding:1px 5px;border-radius:4px;font-size:11px">#project:</code>
+            ثم <code style="background:#374151;padding:1px 5px;border-radius:4px;font-size:11px">- مهمة</code> — أو اكتب <code style="background:#374151;padding:1px 5px;border-radius:4px;font-size:11px">/</code> لخيارات
+          </div>
+          <div id="smart-preview"></div>
           <div class="dump-footer">
-            <button class="btn btn-accent" onclick="addDump()">
+            <button class="btn btn-accent" onclick="addDump()" id="dump-add-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               أضف للصندوق
             </button>
-            <button class="btn btn-ghost" onclick="document.getElementById('dump-textarea').value=''">مسح</button>
+            <button id="dump-import-btn" class="btn" onclick="executSmartImport()"
+              style="display:none;background:#8b5cf6;color:#fff;border:none;gap:6px;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;align-items:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+              ⚡ إنشاء من النص
+            </button>
+            <button class="btn btn-ghost" onclick="clearDumpArea()">مسح</button>
             <span class="dump-hint" id="dump-hint">3 أفكار في الصندوق</span>
           </div>
         </div>
@@ -3919,6 +3992,609 @@ function saveTask() {
   showToast('تمت إضافة المهمة ✓');
 }
 
+
+// ══════════════════════════════════════
+// SMART PARSER — Slash Commands + Auto Import
+// ══════════════════════════════════════
+
+const SLASH_COMMANDS = [
+  { group: 'أولوية', icon: '🔴', label: 'عاجل',    desc: 'urgent',  insert: '[priority:urgent]' },
+  { group: 'أولوية', icon: '🟠', label: 'مرتفع',   desc: 'high',    insert: '[priority:high]' },
+  { group: 'أولوية', icon: '🟡', label: 'متوسط',   desc: 'medium',  insert: '[priority:medium]' },
+  { group: 'أولوية', icon: '🟣', label: 'منخفض',   desc: 'low',     insert: '[priority:low]' },
+  { group: 'أهمية',  icon: '⭐', label: 'مهم',     desc: 'high',    insert: '[importance:high]' },
+  { group: 'أهمية',  icon: '—',  label: 'أقل أهمية', desc: 'low',   insert: '[importance:low]' },
+  { group: 'موعد',   icon: '📅', label: 'اليوم',   desc: new Date().toISOString().slice(0,10), insert: '[date:' + new Date().toISOString().slice(0,10) + ']' },
+  { group: 'موعد',   icon: '📅', label: 'تاريخ...',desc: 'YYYY-MM-DD', insert: '[date:]', cursor: -1 },
+  { group: 'مدة',    icon: '⏱️', label: '15 دقيقة', desc: '',       insert: '[duration:15]' },
+  { group: 'مدة',    icon: '⏱️', label: '30 دقيقة', desc: '',       insert: '[duration:30]' },
+  { group: 'مدة',    icon: '⏱️', label: 'ساعة',    desc: '',        insert: '[duration:60]' },
+  { group: 'مدة',    icon: '⏱️', label: 'ساعتان',  desc: '',        insert: '[duration:120]' },
+  { group: 'حالة',   icon: '▶️', label: 'للبدء',   desc: '',        insert: '[status:للبدء]' },
+  { group: 'حالة',   icon: '🔄', label: 'قيد التنفيذ', desc: '',    insert: '[status:قيد التنفيذ]' },
+  { group: 'حالة',   icon: '✅', label: 'مكتمل',   desc: '',        insert: '[status:مكتمل]' },
+];
+
+let _slashFilter = '';
+let _slashIdx = 0;
+let _slashStart = -1;
+
+// @ mention (workspace) and # mention (project) state
+let _mentionType = null;   // '@' | '#' | null
+let _mentionFilter = '';
+let _mentionStart = -1;
+let _mentionEnd = -1;      // cursor pos at detection time
+let _mentionIdx = 0;
+let _mentionWsId = null;   // selected workspace id (for # project filtering)
+let _mentionItems = [];    // cached items at render time
+
+function onDumpInput(ta) {
+  const val = ta.value;
+  const pos = ta.selectionStart;
+
+  // Only look at the CURRENT line before cursor
+  const beforeCursor = val.slice(0, pos);
+  const currentLine = beforeCursor.slice(beforeCursor.lastIndexOf('\n') + 1);
+
+  // Slash: / at end of current line
+  const slashMatch = currentLine.match(/\/([\w\u0600-\u06FF]*)$/);
+
+  // @ mention: line starts with @ and not already completed as @workspace:
+  const atMatch = currentLine.match(/^@([\u0600-\u06FF\w]*)$/) ||
+                  currentLine.match(/^@([\u0600-\u06FF\w ]*)$/);
+  const atActive = atMatch && !currentLine.startsWith('@workspace:');
+
+  // # mention: line starts with # and not already completed as #project:
+  const hashMatch = currentLine.match(/^#([\u0600-\u06FF\w]*)$/) ||
+                    currentLine.match(/^#([\u0600-\u06FF\w ]*)$/);
+  const hashActive = hashMatch && !currentLine.startsWith('#project:');
+
+  if (atActive) {
+    closeSlashMenu();
+    _mentionType = '@';
+    _mentionFilter = (atMatch[1] || '').trim();
+    _mentionStart = pos - currentLine.length;
+    _mentionEnd = pos;
+    _mentionIdx = 0;
+    renderMentionMenu(ta);
+  } else if (hashActive) {
+    closeSlashMenu();
+    _mentionType = '#';
+    _mentionFilter = (hashMatch[1] || '').trim();
+    _mentionStart = pos - currentLine.length;
+    _mentionEnd = pos;
+    _mentionIdx = 0;
+    // Detect last workspace used in text
+    const wsLine = val.split('\n').reverse().find(l => l.startsWith('@workspace:'));
+    if (wsLine) {
+      const wsName = wsLine.replace('@workspace:', '').trim();
+      const ws = WORKSPACES.find(w => w.name === wsName);
+      _mentionWsId = ws?.id || null;
+    }
+    renderMentionMenu(ta);
+  } else if (slashMatch) {
+    closeMentionMenu();
+    _slashFilter = slashMatch[1].toLowerCase();
+    _slashStart = pos - currentLine.length + currentLine.lastIndexOf('/');
+    _slashIdx = 0;
+    renderSlashMenu(ta);
+  } else {
+    closeSlashMenu();
+    closeMentionMenu();
+  }
+
+  // Detect smart pattern (@workspace: or - line or * line)
+  const isSmartPattern = /^@workspace:/m.test(val);
+  const hint = document.getElementById('dump-smart-hint');
+  if (isSmartPattern) {
+    hint?.classList.remove('visible');
+    buildSmartPreview(val);
+  } else if (val.trim().length > 2) {
+    hint?.classList.add('visible');
+    document.getElementById('smart-preview').style.display = 'none';
+    document.getElementById('dump-import-btn').style.display = 'none';
+    document.getElementById('dump-add-btn').style.display = '';
+  } else {
+    hint?.classList.remove('visible');
+  }
+}
+
+function renderSlashMenu(ta) {
+  const menu = document.getElementById('slash-menu');
+  const filtered = SLASH_COMMANDS.filter(c =>
+    !_slashFilter ||
+    c.label.toLowerCase().includes(_slashFilter) ||
+    c.group.toLowerCase().includes(_slashFilter) ||
+    c.insert.toLowerCase().includes(_slashFilter)
+  );
+
+  if (!filtered.length) { closeSlashMenu(); return; }
+
+  // Group by category
+  const groups = {};
+  filtered.forEach(c => (groups[c.group] = groups[c.group] || []).push(c));
+
+  menu.innerHTML = Object.entries(groups).map(([grp, items]) =>
+    `<div class="slash-group-label">${grp}</div>` +
+    items.map((item, i) => {
+      const globalIdx = filtered.indexOf(item);
+      return `<div class="slash-item${globalIdx === _slashIdx ? ' active' : ''}"
+        onmousedown="event.preventDefault();applySlashCommand(${filtered.indexOf(item)})"
+        onmouseover="_slashIdx=${globalIdx};renderSlashMenu(document.getElementById('dump-textarea'))">
+        <span class="slash-item-icon">${item.icon}</span>
+        <span class="slash-item-label">${item.label}</span>
+        ${item.desc ? `<span class="slash-item-desc">${item.desc}</span>` : ''}
+      </div>`;
+    }).join('')
+  ).join('');
+
+  menu.style.display = 'block';
+
+  // Position below cursor line
+  const lineHeight = 22;
+  const linesBefore = ta.value.slice(0, _slashStart).split('\n').length;
+  menu.style.top = (linesBefore * lineHeight + 8) + 'px';
+  menu.style.right = '0';
+}
+
+function applySlashCommand(idx) {
+  const filtered = SLASH_COMMANDS.filter(c =>
+    !_slashFilter ||
+    c.label.toLowerCase().includes(_slashFilter) ||
+    c.group.toLowerCase().includes(_slashFilter) ||
+    c.insert.toLowerCase().includes(_slashFilter)
+  );
+  const cmd = filtered[idx];
+  if (!cmd) return;
+
+  const ta = document.getElementById('dump-textarea');
+  const val = ta.value;
+  const before = val.slice(0, _slashStart);
+  const after = val.slice(ta.selectionStart);
+  const insert = cmd.insert;
+
+  ta.value = before + insert + ' ' + after;
+  const newPos = before.length + insert.length + (cmd.cursor || 0) + (cmd.cursor ? 0 : 1);
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+  closeSlashMenu();
+  onDumpInput(ta);
+}
+
+
+// ── @ and # Mention Menus ──
+function getMentionItems() {
+  if (_mentionType === '@') {
+    // Workspace list + "إنشاء جديد" option
+    const items = WORKSPACES
+      .filter(ws => !_mentionFilter || ws.name.includes(_mentionFilter))
+      .map(ws => ({
+        id: ws.id,
+        label: ws.name,
+        icon: typeof ws.icon === 'string' ? ws.icon : '💼',
+        sub: ws.projectIds.length + ' مشروع',
+        isNew: false,
+      }));
+    // Show "create new" only when filter text has content and no exact match
+    if (_mentionFilter && _mentionFilter.trim()) {
+      const exactMatch = WORKSPACES.find(ws => ws.name === _mentionFilter.trim());
+      if (!exactMatch) {
+        items.push({id: null, label: _mentionFilter.trim(), icon: '✨', sub: 'إنشاء مساحة جديدة', isNew: true});
+      }
+    }
+    return items;
+  }
+
+  if (_mentionType === '#') {
+    // Projects in the last mentioned workspace, or all if none
+    let projects = Object.values(PROJECTS);
+    if (_mentionWsId) {
+      const ws = WORKSPACES.find(w => w.id === _mentionWsId);
+      if (ws) projects = ws.projectIds.map(id => PROJECTS[id]).filter(Boolean);
+    }
+    const items = projects
+      .filter(p => !_mentionFilter || p.name.includes(_mentionFilter))
+      .map(p => ({
+        id: p.id,
+        label: p.name,
+        icon: typeof p.icon === 'string' ? p.icon : '📁',
+        sub: p.tasks.length + ' مهمة',
+        isNew: false,
+      }));
+    const exactMatch = projects.find(p => p.name === _mentionFilter);
+    if (_mentionFilter && _mentionFilter.trim()) {
+      const exactMatchP = projects.find(p => p.name === _mentionFilter.trim());
+      if (!exactMatchP) {
+        items.push({id: null, label: _mentionFilter.trim(), icon: '✨', sub: 'إنشاء مشروع جديد', isNew: true});
+      }
+    }
+    return items;
+  }
+  return [];
+}
+
+function renderMentionMenu(ta) {
+  const menu = document.getElementById('slash-menu');
+  _mentionItems = getMentionItems().filter(i => !i.placeholder);
+  if (!_mentionItems.length) { closeMentionMenu(); return; }
+
+  const title = _mentionType === '@' ? 'مساحات العمل' : 'المشاريع';
+  if (_mentionIdx >= _mentionItems.length) _mentionIdx = _mentionItems.length - 1;
+  if (_mentionIdx < 0) _mentionIdx = 0;
+
+  menu.innerHTML = `<div class="slash-group-label">${_mentionType === '@' ? '💼' : '📁'} ${title}</div>` +
+    _mentionItems.map((item, i) =>
+      `<div class="slash-item${i === _mentionIdx ? ' active' : ''}"
+        onmousedown="event.preventDefault();applyMention(${i})"
+        onmouseover="_mentionIdx=${i};renderMentionMenu(document.getElementById('dump-textarea'))">
+        <span class="slash-item-icon">${item.icon}</span>
+        <span class="slash-item-label">${item.label || '—'}</span>
+        <span class="slash-item-desc">${item.sub}</span>
+        ${item.isNew ? '<span style="font-size:10px;background:rgba(139,92,246,.2);color:#a78bfa;padding:1px 6px;border-radius:8px">جديد</span>' : ''}
+      </div>`
+    ).join('');
+
+  menu.style.display = 'block';
+}
+
+function applyMention(idx) {
+  const item = _mentionItems[idx];
+  if (!item) { closeMentionMenu(); return; }
+
+  const ta = document.getElementById('dump-textarea');
+  if (!ta) return;
+
+  const val = ta.value;
+  // Use stored positions from detection time (ta.selectionStart unreliable after click)
+  const before = val.slice(0, _mentionStart);
+  const after = val.slice(_mentionEnd);
+
+  let insert;
+  if (_mentionType === '@') {
+    insert = '@workspace: ' + item.label + '\n';
+    _mentionWsId = item.id || null;
+  } else {
+    insert = '#project: ' + item.label + '\n';
+  }
+
+  ta.value = before + insert + after;
+  const newPos = before.length + insert.length;
+  ta.setSelectionRange(newPos, newPos);
+
+  // Close menu and clear state fully
+  _mentionType = null;
+  _mentionFilter = '';
+  _mentionStart = -1;
+  document.getElementById('slash-menu').style.display = 'none';
+
+  ta.focus();
+
+  // Update smart preview after short delay
+  setTimeout(() => {
+    const isSmartPattern = /^@workspace:/m.test(ta.value);
+    if (isSmartPattern) buildSmartPreview(ta.value);
+  }, 20);
+}
+
+function closeMentionMenu() {
+  document.getElementById('slash-menu').style.display = 'none';
+  _mentionType = null;
+  _mentionFilter = '';
+  _mentionStart = -1;
+  _mentionEnd = -1;
+  _mentionItems = [];
+}
+
+function closeSlashMenu() {
+  const menu = document.getElementById('slash-menu');
+  if (menu) menu.style.display = 'none';
+  _slashStart = -1;
+  _slashFilter = '';
+}
+
+function onDumpKeydown(e) {
+  const menu = document.getElementById('slash-menu');
+  if (menu && menu.style.display !== 'none') {
+
+    // Mention menu (@workspace / #project)
+    if (_mentionType) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        _mentionIdx = Math.min(_mentionIdx + 1, _mentionItems.length - 1);
+        renderMentionMenu(document.getElementById('dump-textarea'));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        _mentionIdx = Math.max(_mentionIdx - 1, 0);
+        renderMentionMenu(document.getElementById('dump-textarea'));
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        applyMention(_mentionIdx);
+      } else if (e.key === 'Escape') {
+        closeMentionMenu();
+      }
+      return;
+    }
+
+    // Slash menu (/)
+    const filtered = SLASH_COMMANDS.filter(c =>
+      !_slashFilter ||
+      c.label.toLowerCase().includes(_slashFilter) ||
+      c.group.toLowerCase().includes(_slashFilter) ||
+      c.insert.toLowerCase().includes(_slashFilter)
+    );
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _slashIdx = Math.min(_slashIdx + 1, filtered.length - 1);
+      renderSlashMenu(document.getElementById('dump-textarea'));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _slashIdx = Math.max(_slashIdx - 1, 0);
+      renderSlashMenu(document.getElementById('dump-textarea'));
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      applySlashCommand(_slashIdx);
+    } else if (e.key === 'Escape') {
+      closeSlashMenu();
+    }
+    return;
+  }
+  // Normal: Ctrl+Enter = add dump
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    addDump();
+  }
+}
+
+// ══ SMART PARSER ══
+function parseSmartText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const result = { workspaces: [], warnings: [] };
+  let currentWs = null, currentProj = null, currentTask = null;
+
+  lines.forEach(line => {
+    if (line.startsWith('@workspace:')) {
+      const name = line.replace('@workspace:', '').trim();
+      if (!name) { result.warnings.push('مساحة عمل بدون اسم — تم التجاهل'); return; }
+      currentWs = { name, projects: [] };
+      result.workspaces.push(currentWs);
+      currentProj = null; currentTask = null;
+
+    } else if (line === '@' || line === '@workspace') {
+      result.warnings.push('@ بدون اسم مساحة عمل — تم التجاهل');
+
+    } else if (line.startsWith('#project:')) {
+      const raw = line.replace('#project:', '').trim();
+      const name = raw.replace(/\[color:[^\]]+\]/g, '').trim();
+      if (!name) { result.warnings.push('مشروع بدون اسم — تم التجاهل'); return; }
+      const colorM = raw.match(/\[color:([^\]]+)\]/);
+      currentProj = { name, color: colorM ? colorM[1] : null, tasks: [] };
+      if (currentWs) currentWs.projects.push(currentProj);
+      else result.warnings.push('مشروع "' + name + '" بدون مساحة عمل — لن يتم إنشاؤه');
+      currentTask = null;
+
+    } else if (line === '#' || line === '#project') {
+      result.warnings.push('# بدون اسم مشروع — تم التجاهل');
+
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      const raw = line.slice(2).trim();
+      if (!raw) return;
+      const task = parseTaskLine(raw);
+      if (currentProj) {
+        currentProj.tasks.push(task);
+        currentTask = task;
+      } else {
+        result.warnings.push('مهمة "' + raw + '" بدون مشروع — تم التجاهل');
+      }
+
+    } else if (line.startsWith('  > ') || line.startsWith('> ')) {
+      const raw = line.replace(/^>\s*/, '').replace(/^\s+>\s*/, '').trim();
+      const sub = parseTaskLine(raw);
+      if (currentTask) {
+        if (!currentTask.subtasks) currentTask.subtasks = [];
+        currentTask.subtasks.push(sub);
+      }
+    }
+  });
+
+  return result;
+}
+
+function parseTaskLine(raw) {
+  const task = { title: raw, priority: 'medium', importance: 'high',
+    status: '', date: '', duration: 60, subtasks: [] };
+
+  const attrs = raw.match(/\[[^\]]+\]/g) || [];
+  attrs.forEach(attr => {
+    const [key, val] = attr.slice(1,-1).split(':');
+    if (key === 'priority') task.priority = val;
+    else if (key === 'importance') task.importance = val;
+    else if (key === 'status') task.status = val;
+    else if (key === 'date') task.date = val;
+    else if (key === 'duration') task.duration = parseInt(val) || 60;
+  });
+
+  task.title = raw.replace(/\[[^\]]+\]/g, '').trim();
+  return task;
+}
+
+function buildSmartPreview(text) {
+  const data = parseSmartText(text);
+  const preview = document.getElementById('smart-preview');
+  const importBtn = document.getElementById('dump-import-btn');
+  const addBtn = document.getElementById('dump-add-btn');
+
+  if (!data.workspaces.length) {
+    preview.style.display = 'none';
+    importBtn.style.display = 'none';
+    addBtn.style.display = '';
+    return;
+  }
+
+  let html = `<div class="preview-title">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+    معاينة — سيتم إنشاء:
+  </div>`;
+
+  let totalTasks = 0;
+  data.workspaces.forEach(ws => {
+    const wsExists = WORKSPACES.find(w => w.name === ws.name);
+    html += `<div class="preview-ws">
+      💼 ${ws.name}
+      <span class="${wsExists ? 'preview-exists' : 'preview-new'}">${wsExists ? '(موجود)' : '(جديد)'}</span>
+    </div>`;
+
+    ws.projects.forEach(proj => {
+      const projExists = wsExists && Object.values(PROJECTS).find(p => p.name === proj.name);
+      html += `<div class="preview-proj">
+        📁 ${proj.name}
+        <span class="${projExists ? 'preview-exists' : 'preview-new'}">${projExists ? '(موجود)' : '(جديد)'}</span>
+      </div>`;
+
+      proj.tasks.forEach(task => {
+        totalTasks++;
+        const pLabel = {urgent:'🔴',high:'🟠',medium:'🟡',low:'🟣'}[task.priority] || '🟡';
+        const dateStr = task.date ? ` · ${task.date}` : '';
+        html += `<div class="preview-task">
+          ${pLabel} ${task.title}${dateStr}
+          ${task.subtasks?.length ? `<span class="preview-badge">${task.subtasks.length} فرعية</span>` : ''}
+        </div>`;
+        (task.subtasks||[]).forEach(s => {
+          html += `<div class="preview-subtask">↳ ${s.title}</div>`;
+        });
+      });
+    });
+  });
+
+  const wsCount = data.workspaces.length;
+  const projCount = data.workspaces.reduce((a,w)=>a+w.projects.length,0);
+  html += `<div style="font-size:11px;color:#6b7280;margin-top:8px;padding-top:8px;border-top:1px solid #374151">
+    ${wsCount} مساحة · ${projCount} مشروع · ${totalTasks} مهمة
+  </div>`;
+
+  if (data.warnings?.length) {
+    html += data.warnings.map(w =>
+      `<div style="font-size:11px;color:#fbbf24;margin-top:4px;display:flex;align-items:center;gap:5px">
+        ⚠️ ${w}
+      </div>`
+    ).join('');
+  }
+
+  preview.innerHTML = html;
+  preview.style.display = 'block';
+  importBtn.style.display = 'flex';
+  addBtn.style.display = 'none';
+
+  // Store parsed data for execution
+  window._smartParsedData = data;
+}
+
+function executSmartImport() {
+  // Parse fresh from textarea if preview wasn't built yet
+  if (!window._smartParsedData?.workspaces?.length) {
+    const ta = document.getElementById('dump-textarea');
+    if (ta?.value.trim()) buildSmartPreview(ta.value.trim());
+  }
+  const data = window._smartParsedData;
+  if (!data?.workspaces?.length) {
+    showToast('لا يوجد نص صالح للإنشاء');
+    return;
+  }
+
+  let wsCreated = 0, projCreated = 0, taskCreated = 0;
+
+  data.workspaces.forEach(wsData => {
+    // Find or create workspace
+    let ws = WORKSPACES.find(w => w.name === wsData.name);
+    if (!ws) {
+      ws = {
+        id: 'ws' + Date.now() + Math.random().toString(36).slice(2,5),
+        name: wsData.name,
+        color: '#8b5cf6',
+        icon: '💼',
+        projectIds: []
+      };
+      WORKSPACES.push(ws);
+      wsCreated++;
+    }
+
+    wsData.projects.forEach(projData => {
+      // Find or create project
+      let proj = Object.values(PROJECTS).find(p => p.name === projData.name);
+      if (!proj) {
+        const projId = 'p' + Date.now() + Math.random().toString(36).slice(2,5);
+        proj = {
+          id: projId,
+          name: projData.name,
+          color: projData.color || '#8b5cf6',
+          icon: '📁',
+          tasks: [],
+          milestones: [],
+          kanban: [
+            {id:'k1',name:'للبدء',color:'#6b7280'},
+            {id:'k2',name:'قيد التنفيذ',color:'#60a5fa'},
+            {id:'k3',name:'مكتمل',color:'#34d399'}
+          ]
+        };
+        PROJECTS[projId] = proj;
+        if (!ws.projectIds.includes(projId)) ws.projectIds.push(projId);
+        projCreated++;
+      } else {
+        // Make sure project is linked to this workspace
+        if (!ws.projectIds.includes(proj.id)) ws.projectIds.push(proj.id);
+      }
+
+      // Add tasks
+      projData.tasks.forEach(taskData => {
+        const tid = 't' + Date.now() + Math.random().toString(36).slice(2,6);
+        const status = taskData.status ||
+          (proj.kanban && proj.kanban[0]?.name) || 'للبدء';
+        proj.tasks.push({
+          id: tid,
+          title: taskData.title,
+          priority: taskData.priority || 'medium',
+          importance: taskData.importance || 'high',
+          status,
+          date: taskData.date || '',
+          duration: taskData.duration || 60,
+          done: false,
+          archived: false,
+          notes: '',
+          subtasks: (taskData.subtasks || []).map(s => ({
+            id: 's' + Date.now() + Math.random().toString(36).slice(2,6),
+            title: s.title,
+            done: false,
+            milestoneId: null
+          }))
+        });
+        taskCreated++;
+      });
+    });
+  });
+
+  autoSaveData();
+  renderSidebarWorkspaces();
+  renderSidebarProjects();
+  renderProjects();
+
+  // Clear textarea and reset
+  document.getElementById('dump-textarea').value = '';
+  resetSmartDump();
+
+  showToast(
+    (wsCreated ? wsCreated + ' مساحة · ' : '') +
+    (projCreated ? projCreated + ' مشروع · ' : '') +
+    taskCreated + ' مهمة — تم الإنشاء ✓'
+  );
+
+  // Navigate to first created project
+  const firstWs = data.workspaces[0];
+  const firstProj = firstWs?.projects[0];
+  if (firstProj) {
+    const proj = Object.values(PROJECTS).find(p => p.name === firstProj.name);
+    if (proj) setTimeout(() => openProject(proj.id), 300);
+  }
+}
+
 // ══════════════════════════════════════
 // BRAIN DUMP
 // ══════════════════════════════════════
@@ -3966,13 +4642,37 @@ function addDump() {
   const ta = document.getElementById('dump-textarea');
   const text = ta.value.trim();
   if (!text) return;
+
+  // Smart pattern detected — run import instead
+  if (/^@workspace:/m.test(text)) {
+    buildSmartPreview(text);
+    executSmartImport();
+    return;
+  }
+
   const item = {id: 'd' + Date.now(), text, createdAt: new Date().toISOString()};
   DUMP_ITEMS.unshift(item);
   renderDumpItem(item, true);
   ta.value = '';
+  resetSmartDump();
   autoSaveData();
   updateDumpCount();
   showToast('تمت الإضافة للصندوق ✓');
+}
+
+function clearDumpArea() {
+  const ta = document.getElementById('dump-textarea');
+  if (ta) ta.value = '';
+  resetSmartDump();
+}
+
+function resetSmartDump() {
+  document.getElementById('slash-menu').style.display = 'none';
+  document.getElementById('smart-preview').style.display = 'none';
+  document.getElementById('smart-preview').innerHTML = '';
+  document.getElementById('dump-import-btn').style.display = 'none';
+  document.getElementById('dump-add-btn').style.display = '';
+  document.getElementById('dump-smart-hint').classList.remove('visible');
 }
 function deleteDump(id) {
   const el = document.querySelector(`.inbox-item[data-id="${id}"]`);
