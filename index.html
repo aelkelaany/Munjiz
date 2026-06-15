@@ -4508,7 +4508,7 @@ function executSmartImport() {
     let ws = WORKSPACES.find(w => w.name === wsData.name);
     if (!ws) {
       ws = {
-        id: 'ws' + Date.now() + Math.random().toString(36).slice(2,5),
+        id: 'ws' + Date.now().toString(36) + Math.random().toString(36).slice(2,8),
         name: wsData.name,
         color: '#8b5cf6',
         icon: '💼',
@@ -4522,7 +4522,7 @@ function executSmartImport() {
       // Find or create project
       let proj = Object.values(PROJECTS).find(p => p.name === projData.name);
       if (!proj) {
-        const projId = 'p' + Date.now() + Math.random().toString(36).slice(2,5);
+        const projId = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
         proj = {
           id: projId,
           name: projData.name,
@@ -4531,9 +4531,9 @@ function executSmartImport() {
           tasks: [],
           milestones: [],
           kanban: [
-            {id:'k1',name:'للبدء',color:'#6b7280'},
-            {id:'k2',name:'قيد التنفيذ',color:'#60a5fa'},
-            {id:'k3',name:'مكتمل',color:'#34d399'}
+            {id:'k'+Date.now()+'1',name:'للبدء',color:'#6b7280'},
+            {id:'k'+Date.now()+'2',name:'قيد التنفيذ',color:'#60a5fa'},
+            {id:'k'+Date.now()+'3',name:'مكتمل',color:'#34d399'}
           ]
         };
         PROJECTS[projId] = proj;
@@ -4561,7 +4561,7 @@ function executSmartImport() {
           archived: false,
           notes: '',
           subtasks: (taskData.subtasks || []).map(s => ({
-            id: 's' + Date.now() + Math.random().toString(36).slice(2,6),
+            id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,8),
             title: s.title,
             done: false,
             milestoneId: null
@@ -6170,7 +6170,7 @@ function checkRecurringDue() {
       );
       if (!alreadyToday) {
         proj.tasks.push({
-          id: 't' + Date.now() + Math.random().toString(36).slice(2,6),
+          id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,8),
           title: rec.title,
           priority: rec.priority || 'medium',
           importance: rec.importance || 'high',
