@@ -3102,14 +3102,27 @@ function renderTaskList() {
     if (tableFilter.priority !== 'all' && t.priority !== tableFilter.priority) return false;
     if (tableFilter.status !== 'all') {
       if (tableFilter.status === 'done' && !t.done) return false;
-      if (tableFilter.status === 'pending' && t.done) return false;
+      if (tableFilter.status === 'pending' && (t.done || t.status === (proj.kanban?.[0]?.name || 'للبدء'))) return false;
+      if (tableFilter.status === 'todo' && (t.done || t.status !== (proj.kanban?.[0]?.name || 'للبدء'))) return false;
     }
     if (tableFilter.search && !t.title.includes(tableFilter.search)) return false;
     return true;
   });
 
-  // sort
+  // Auto status grouping: للبدء → قيد التنفيذ → مكتمل (always primary order)
+  const todoName = proj.kanban?.[0]?.name || 'للبدء';
+  const doneName = proj.kanban?.[proj.kanban.length-1]?.name || 'مكتمل';
+  const statusRank = t => {
+    if (t.done) return 2;
+    if (t.status && t.status !== todoName && t.status !== doneName) return 1; // in-progress / any custom mid status
+    return 0; // todo / no status
+  };
+
+  // sort — status group first, then the column the user picked as tiebreaker
   tasks = [...tasks].sort((a,b) => {
+    const ra = statusRank(a), rb = statusRank(b);
+    if (ra !== rb) return ra - rb;
+
     let va, vb;
     if (tableSort.col === 'title') { va = a.title; vb = b.title; }
     else if (tableSort.col === 'priority') {
@@ -3128,7 +3141,7 @@ function renderTaskList() {
 
   // priority filter buttons
   const priorities = [{v:'all',l:'الكل'},{v:'urgent',l:'عاجل'},{v:'high',l:'مرتفع'},{v:'medium',l:'متوسط'},{v:'low',l:'منخفض'}];
-  const statusFilters = [{v:'all',l:'الكل'},{v:'pending',l:'قيد التنفيذ'},{v:'done',l:'مكتمل'}];
+  const statusFilters = [{v:'all',l:'الكل'},{v:'todo',l:'للبدء'},{v:'pending',l:'قيد التنفيذ'},{v:'done',l:'مكتمل'}];
 
   const arrowFor = col => {
     if (tableSort.col !== col) return '<span class="sort-arrow">↕</span>';
@@ -3200,8 +3213,8 @@ function renderTaskList() {
                   onclick="event.stopPropagation();toggleBulkSelect('${t.id}',this)"
                   style="width:13px;height:13px;cursor:pointer;accent-color:#8b5cf6;flex-shrink:0">
                 ${expandBtn}
-                <div onclick="event.stopPropagation();toggleTask('${t.id}')" style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${t.done?'#34d399':'#4b5563'};background:${t.done?'#34d399':'#374151'};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-                  ${t.done?checkSvg:''}
+                <div onclick="event.stopPropagation();toggleTask('${t.id}')" title="${t.done?'مكتملة — اضغط لإعادة الفتح':(t.status&&t.status!==(proj.kanban?.[0]?.name||'للبدء')?'قيد التنفيذ — اضغط للإتمام':'للبدء — اضغط لبدء التنفيذ')}" style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${t.done?'#34d399':(t.status&&t.status!==(proj.kanban?.[0]?.name||'للبدء')?'#60a5fa':'#4b5563')};background:${t.done?'#34d399':(t.status&&t.status!==(proj.kanban?.[0]?.name||'للبدء')?'rgba(96,165,250,.25)':'#374151')};display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                  ${t.done?checkSvg:(t.status&&t.status!==(proj.kanban?.[0]?.name||'للبدء')?'<span style="width:7px;height:7px;border-radius:50%;background:#60a5fa"></span>':'')}
                 </div>
               </div>
             </td>
@@ -3383,9 +3396,33 @@ function toggleTask(taskId) {
   if (!proj) return;
   const task = proj.tasks.find(t => t.id === taskId);
   if (!task) return;
-  task.done = !task.done;
+
+  const kanban = proj.kanban || [];
+  const todoName = kanban[0]?.name || 'للبدء';
+  const inProgressName = kanban[1]?.name || 'قيد التنفيذ';
+  const doneName = kanban[kanban.length - 1]?.name || 'مكتمل';
+
+  // Cycle: للبدء/no-status → قيد التنفيذ → مكتمل → للبدء
+  if (task.done) {
+    // was done → reset to todo
+    task.done = false;
+    task.status = todoName;
+  } else if (task.status === inProgressName) {
+    // was in-progress → mark done
+    task.done = true;
+    task.status = doneName;
+  } else {
+    // was todo (or anything else) → move to in-progress
+    task.done = false;
+    task.status = inProgressName;
+  }
+
   autoSaveData();
   renderTaskList();
+  renderKanban();
+  updateProjectMeta();
+  if (document.getElementById('view-dashboard')?.style.display !== 'none') renderDashboard();
+  if (document.getElementById('view-eisenhower')?.style.display !== 'none') renderEisenhower();
 }
 
 // ── KANBAN ──
