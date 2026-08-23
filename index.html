@@ -1507,7 +1507,7 @@ tr:hover .task-row-actions{opacity:1}
   font-size:22px;font-weight:700;color:#f9fafb;
   background:#1f2937;border:1.5px solid #8b5cf6;border-radius:6px;
   padding:1px 6px;font-family:inherit;outline:none;
-  min-width:200px;
+  min-width:200px;width:100%;max-width:600px;
 }
 
 /* ══ SUBTASK MILESTONE GROUPS ══ */
@@ -2136,26 +2136,10 @@ html.light-mode .nav-badge img{
             <div style="font-size:20px;font-weight:600;color:#f9fafb;margin-bottom:4px">علاقات المهام</div>
             <div style="font-size:13px;color:#6b7280">اربط المهام ببعضها وشوف العلاقات بصرياً</div>
           </div>
-          <button class="btn btn-accent" style="margin-right:auto" onclick="openModal('relation')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            إضافة علاقة
-          </button>
+          <span style="margin-right:auto;font-size:12px;color:#6b7280">أضف علاقات من داخل تفاصيل المهمة</span>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <div style="font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">قائمة العلاقات</div>
-            <div id="relations-list"></div>
-          </div>
-          <div>
-            <div style="font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">الرسم البياني</div>
-            <div style="background:#1f2937;border:1px solid #2a3f5a;border-radius:14px;overflow:hidden">
-              <canvas id="relations-canvas" style="width:100%;display:block"></canvas>
-              <div style="padding:10px 14px;font-size:11px;color:#6b7280;border-top:1px solid #2a3f5a">
-                اضغط على مهمة في القائمة لترى علاقاتها
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Relations grouped by workspace → project, each with its own graph -->
+        <div id="relations-list"></div>
       </div>
 
       <!-- ─── RECURRING TASKS VIEW ─── -->
@@ -2439,6 +2423,29 @@ html.light-mode .nav-badge img{
         إضافة مرحلة
       </button>
     </div>
+
+    <!-- RELATIONS SECTION -->
+    <div class="panel-section">
+      <div class="panel-section-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        العلاقات
+      </div>
+      <div id="panel-relations-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <select class="form-select" id="panel-rel-task" style="flex:1;font-size:12px;padding:5px 8px">
+          <option value="">اختر مهمة من نفس المشروع...</option>
+        </select>
+        <select class="form-select" id="panel-rel-type" style="width:120px;font-size:12px;padding:5px 8px">
+          <option value="related">🔗 مرتبطة بـ</option>
+          <option value="blocks">🔴 تحجب</option>
+          <option value="blocked_by">⛔ محجوبة بواسطة</option>
+          <option value="depends">⬇️ تعتمد على</option>
+          <option value="duplicate">📋 مكررة لـ</option>
+        </select>
+        <button class="add-subtask-btn" onclick="addPanelRelation()" style="padding:5px 10px;font-size:13px">+</button>
+      </div>
+    </div>
+
     <div class="panel-section" style="margin-top:24px;padding-top:16px;border-top:1px solid #374151">
       <button class="btn" style="color:#f87171;border-color:#f87171;background:none;width:100%;justify-content:center" onclick="deleteCurrentTask()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
@@ -2735,11 +2742,11 @@ html.light-mode .nav-badge img{
     </div>
     <div class="form-group"><label class="form-label">نوع العلاقة</label>
       <select class="form-select" id="rel-type">
-        <option value="blocks">تعطل ◀</option>
-        <option value="blocked_by">معطلة بواسطة ◀</option>
-        <option value="related">مرتبطة بـ ↔</option>
-        <option value="duplicate">مكررة =</option>
-        <option value="depends">تعتمد على ↓</option>
+        <option value="related">🔗 مرتبطة بـ</option>
+        <option value="blocks">🔴 تحجب</option>
+        <option value="blocked_by">⛔ محجوبة بواسطة</option>
+        <option value="depends">⬇️ تعتمد على</option>
+        <option value="duplicate">📋 مكررة لـ</option>
       </select>
     </div>
     <div class="form-group"><label class="form-label">المهمة الثانية</label>
@@ -4917,37 +4924,57 @@ function toggleWsGroup(wsId) {
 
 
 function editProjectName(h1El) {
-  const proj = PROJECTS[currentProjectId];
+  const projId = currentProjectId;
+  const proj = PROJECTS[projId];
   if (!proj) return;
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'proj-title-edit-input';
-  input.value = proj.name;
-  input.style.width = Math.max(200, h1El.offsetWidth + 20) + 'px';
+  // Use contenteditable on the h1 itself — no DOM replacement
+  h1El.contentEditable = 'true';
+  h1El.style.outline = '2px solid #8b5cf6';
+  h1El.style.borderRadius = '6px';
+  h1El.style.padding = '2px 8px';
+  h1El.style.minWidth = '200px';
+  h1El.style.display = 'inline-block';
+  h1El.focus();
 
-  h1El.replaceWith(input);
-  input.focus();
-  input.select();
+  // Select all text
+  const range = document.createRange();
+  range.selectNodeContents(h1El);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
 
   const save = () => {
-    const newName = input.value.trim();
+    h1El.contentEditable = 'false';
+    h1El.style.outline = '';
+    h1El.style.borderRadius = '';
+    h1El.style.padding = '';
+
+    const newName = h1El.textContent.trim();
     if (newName && newName !== proj.name) {
       proj.name = newName;
       autoSaveData();
-      renderSidebarProjects();
+      // Update sidebar only — don't re-render the whole page
       renderSidebarWorkspaces();
+      renderSidebarProjects();
       renderProjects();
+      // Update breadcrumb
+      renderProjectBreadcrumb(projId);
       showToast('تم تغيير اسم المشروع ✓');
+    } else if (!newName) {
+      h1El.textContent = proj.name; // restore if empty
     }
-    openProject(currentProjectId); // re-render header cleanly
   };
 
-  input.addEventListener('blur', save);
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
-    if (e.key === 'Escape') { openProject(currentProjectId); }
-  });
+  h1El.addEventListener('blur', save, {once: true});
+  h1El.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); h1El.blur(); }
+    if (e.key === 'Escape') {
+      h1El.textContent = proj.name;
+      h1El.contentEditable = 'false';
+      h1El.style.outline = '';
+    }
+  }, {once: true});
 }
 
 function moveProjectToWorkspace(projId) {
@@ -5920,40 +5947,182 @@ function renderDashboard() {
 // TASK RELATIONS
 // ══════════════════════════════════════
 const REL_LABELS = {
-  blocks:'تعطل ◀', blocked_by:'معطلة بواسطة ◀',
-  related:'مرتبطة بـ ↔', duplicate:'مكررة =', depends:'تعتمد على ↓'
+  blocks:     '🔴 تحجب',
+  blocked_by: '⛔ محجوبة بواسطة',
+  related:    '🔗 مرتبطة بـ',
+  duplicate:  '📋 مكررة لـ',
+  depends:    '⬇️ تعتمد على'
 };
 
 function getAllTasksFlat() {
-  return Object.values(PROJECTS).flatMap(p => p.tasks.map(t => ({...t, projectName:p.name})));
+  return Object.values(PROJECTS).flatMap(p =>
+    p.tasks.map(t => ({...t, projectId: p.id, projectName: p.name}))
+  );
 }
 
 function renderRelations() {
-  const listEl = document.getElementById('relations-list');
-  if (!listEl) return;
+  const container = document.getElementById('relations-list');
+  if (!container) return;
+
   const allTasks = getAllTasksFlat();
+  const trashSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
 
   if (RELATIONS.length === 0) {
-    listEl.innerHTML = '<div class="dash-empty">لا توجد علاقات بعد — اضغط "إضافة علاقة"</div>';
-    drawRelationGraph([]);
+    container.innerHTML = '<div class="dash-empty">لا توجد علاقات بعد — افتح أي مهمة وأضف علاقة من الـ panel</div>';
     return;
   }
 
-  const trashSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+  // Group relations by project (use task1's project as the primary)
+  const byProject = {};
+  RELATIONS.forEach(r => {
+    const t1 = allTasks.find(t => t.id === r.task1);
+    const t2 = allTasks.find(t => t.id === r.task2);
+    if (!t1 || !t2) return;
+    // Use t1's project as the group key
+    const projId = t1.projectId || Object.keys(PROJECTS).find(id =>
+      PROJECTS[id].tasks.some(t => t.id === r.task1)
+    );
+    if (!projId || !PROJECTS[projId]) return;
+    if (!byProject[projId]) byProject[projId] = [];
+    byProject[projId].push({r, t1, t2});
+  });
 
-  listEl.innerHTML = RELATIONS.map(r => {
-    const t1 = allTasks.find(t=>t.id===r.task1);
-    const t2 = allTasks.find(t=>t.id===r.task2);
-    if (!t1 || !t2) return '';
-    return `<div class="relation-row" onclick="highlightRelation('${r.id}')">
-      <span class="rel-task-name" title="${t1.title}">${t1.title.length>20?t1.title.slice(0,20)+'…':t1.title}</span>
-      <span class="rel-type-badge rel-${r.type}">${REL_LABELS[r.type]||r.type}</span>
-      <span class="rel-task-name" title="${t2.title}">${t2.title.length>20?t2.title.slice(0,20)+'…':t2.title}</span>
-      <button class="rel-del-btn" onclick="event.stopPropagation();deleteRelation('${r.id}')">${trashSvg}</button>
-    </div>`;
-  }).join('');
+  // Group by workspace then project
+  const wsGroups = {};
+  Object.entries(byProject).forEach(([projId, items]) => {
+    const ws = WORKSPACES.find(w => w.projectIds.includes(projId));
+    const wsKey = ws?.id || 'none';
+    const wsName = ws?.name || 'بدون مساحة';
+    const wsIcon = (ws && typeof ws.icon === 'string') ? ws.icon : '📌';
+    if (!wsGroups[wsKey]) wsGroups[wsKey] = {name: wsName, icon: wsIcon, projects: {}};
+    const proj = PROJECTS[projId];
+    if (!proj) return;
+    wsGroups[wsKey].projects[projId] = {name: proj.name, color: proj.color, items};
+  });
 
-  drawRelationGraph(RELATIONS);
+  let html = '';
+  const canvasIds = [];
+
+  Object.entries(wsGroups).forEach(([wsId, wsData]) => {
+    html += `<div style="margin-bottom:24px">
+      <div style="font-size:14px;font-weight:700;color:#f9fafb;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span>${wsData.icon}</span> ${wsData.name}
+      </div>`;
+
+    Object.entries(wsData.projects).forEach(([projId, projData]) => {
+      const cid = 'rel-canvas-' + projId;
+      canvasIds.push({cid, items: projData.items, projId});
+
+      html += `<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${projData.color};flex-shrink:0"></span>
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0">${projData.name}</span>
+          <span style="font-size:11px;color:#6b7280;margin-right:auto">${projData.items.length} علاقة</span>
+        </div>
+
+        <!-- Relation rows -->
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+          ${projData.items.map(({r, t1, t2}) => `
+            <div class="relation-row">
+              <span class="rel-task-name" title="${t1.title}"
+                onclick="openProject('${projId}');setTimeout(()=>openDetailPanel('${t1.id}'),100)"
+                style="cursor:pointer;color:#60a5fa">${t1.title.length>18?t1.title.slice(0,18)+'…':t1.title}</span>
+              <span class="rel-type-badge rel-${r.type}">${REL_LABELS[r.type]||r.type}</span>
+              <span class="rel-task-name" title="${t2.title}"
+                onclick="openProject('${projId}');setTimeout(()=>openDetailPanel('${t2.id}'),100)"
+                style="cursor:pointer;color:#60a5fa">${t2.title.length>18?t2.title.slice(0,18)+'…':t2.title}</span>
+              <button class="rel-del-btn" onclick="deleteRelation('${r.id}')">${trashSvg}</button>
+            </div>`).join('')}
+        </div>
+
+        <!-- Per-project graph -->
+        <div style="background:#111827;border-radius:8px;overflow:hidden">
+          <canvas id="${cid}" style="width:100%;display:block"></canvas>
+        </div>
+      </div>`;
+    });
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+
+  // Draw graphs for each project
+  canvasIds.forEach(({cid, items, projId}) => {
+    const rels = items.map(i => i.r);
+    drawRelationGraphInCanvas(cid, rels, projId);
+  });
+}
+
+function drawRelationGraphInCanvas(canvasId, relations, projId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const allTasks = getAllTasksFlat();
+  const proj = PROJECTS[projId];
+  const W = canvas.parentElement.clientWidth || 400;
+  const H = Math.max(120, Math.min(W * 0.45, 200));
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  if (!relations.length) return;
+
+  const taskIds = [...new Set(relations.flatMap(r => [r.task1, r.task2]))];
+  const nodes = taskIds.map((id, i) => {
+    const task = allTasks.find(t => t.id === id);
+    const angle = (i / taskIds.length) * Math.PI * 2 - Math.PI / 2;
+    const rx = W/2 - 60, ry = H/2 - 30;
+    return {
+      id,
+      label: task ? (task.title.length>12 ? task.title.slice(0,12)+'…' : task.title) : '—',
+      x: W/2 + rx * Math.cos(angle),
+      y: H/2 + ry * Math.sin(angle),
+      color: proj?.color || '#8b5cf6'
+    };
+  });
+
+  const relColors = {blocks:'#f87171',blocked_by:'#fb923c',related:'#38bdf8',duplicate:'#a78bfa',depends:'#fbbf24'};
+
+  // Edges
+  relations.forEach(r => {
+    const n1 = nodes.find(n => n.id === r.task1);
+    const n2 = nodes.find(n => n.id === r.task2);
+    if (!n1 || !n2) return;
+    ctx.beginPath();
+    ctx.moveTo(n1.x, n1.y);
+    ctx.lineTo(n2.x, n2.y);
+    ctx.strokeStyle = relColors[r.type] || '#64748b';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const angle = Math.atan2(n2.y-n1.y, n2.x-n1.x);
+    const ax = n2.x - 14*Math.cos(angle), ay = n2.y - 14*Math.sin(angle);
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - 6*Math.cos(angle-0.4), ay - 6*Math.sin(angle-0.4));
+    ctx.lineTo(ax - 6*Math.cos(angle+0.4), ay - 6*Math.sin(angle+0.4));
+    ctx.closePath();
+    ctx.fillStyle = relColors[r.type] || '#64748b';
+    ctx.fill();
+  });
+
+  // Nodes
+  nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 13, 0, Math.PI*2);
+    ctx.fillStyle = n.color + '33';
+    ctx.fill();
+    ctx.strokeStyle = n.color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = 'bold 9px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.label, n.x, n.y + 20);
+  });
 }
 
 function drawRelationGraph(relations) {
@@ -6365,6 +6534,72 @@ function movePanelTaskToProject(targetProjId) {
   closeDetailPanel();
 }
 
+
+// ── PANEL RELATIONS ──
+function renderPanelRelations() {
+  const list = document.getElementById('panel-relations-list');
+  if (!list) return;
+  const proj = PROJECTS[currentProjectId];
+  if (!proj) return;
+
+  const taskRels = RELATIONS.filter(r =>
+    r.task1 === currentPanelTaskId || r.task2 === currentPanelTaskId
+  );
+
+  if (!taskRels.length) {
+    list.innerHTML = '<div style="font-size:11.5px;color:#6b7280;padding:2px 0">لا توجد علاقات — أضف من القائمة أدناه</div>';
+  } else {
+    const allTasks = getAllTasksFlat();
+    list.innerHTML = taskRels.map(r => {
+      const otherId = r.task1 === currentPanelTaskId ? r.task2 : r.task1;
+      const other = allTasks.find(t => t.id === otherId);
+      const typeLabel = REL_LABELS[r.type] || r.type;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:#374151;border-radius:6px;font-size:12px">
+        <span style="color:#a78bfa;flex-shrink:0;font-size:11px">${typeLabel}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;color:#e5e7eb"
+          onclick="openProject('${currentProjectId}');setTimeout(()=>openDetailPanel('${otherId}'),100)"
+          title="${other?.title || '—'}">${other?.title || '—'}</span>
+        <button onclick="deletePanelRelation('${r.id}')"
+          style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:13px;padding:0;flex-shrink:0">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Populate task select — same project only (excluding current task)
+  const sel = document.getElementById('panel-rel-task');
+  if (sel && proj) {
+    sel.innerHTML = '<option value="">اختر مهمة من نفس المشروع...</option>' +
+      proj.tasks
+        .filter(t => t.id !== currentPanelTaskId)
+        .map(t => `<option value="${t.id}">${t.title}</option>`).join('');
+  }
+}
+
+function addPanelRelation() {
+  const taskSel = document.getElementById('panel-rel-task');
+  const typeSel = document.getElementById('panel-rel-type');
+  const task2 = taskSel?.value;
+  const type = typeSel?.value || 'related';
+  if (!task2 || !currentPanelTaskId) { showToast('اختر مهمة'); return; }
+  if (task2 === currentPanelTaskId) { showToast('لا يمكن ربط مهمة بنفسها'); return; }
+  const exists = RELATIONS.find(r =>
+    (r.task1===currentPanelTaskId&&r.task2===task2) ||
+    (r.task1===task2&&r.task2===currentPanelTaskId)
+  );
+  if (exists) { showToast('هذه العلاقة موجودة'); return; }
+  RELATIONS.push({id:'rel'+Date.now(), task1:currentPanelTaskId, task2, type});
+  autoSaveData();
+  renderPanelRelations();
+  showToast('تمت إضافة العلاقة ✓');
+}
+
+function deletePanelRelation(relId) {
+  RELATIONS = RELATIONS.filter(r => r.id !== relId);
+  autoSaveData();
+  renderPanelRelations();
+  showToast('تم حذف العلاقة');
+}
+
 function openDetailPanel(taskId) {
   const proj = PROJECTS[currentProjectId];
   if (!proj) return;
@@ -6407,6 +6642,7 @@ function openDetailPanel(taskId) {
 
   renderPanelSubtasks();
   renderPanelMilestones();
+  renderPanelRelations();
 
   document.getElementById('detail-panel').classList.add('open');
   document.getElementById('panel-overlay').classList.add('show');
@@ -6650,13 +6886,18 @@ function addSubtask() {
   renderTaskList();
 }
 
-function toggleSubtask(idx) {
+function toggleSubtask(subId) {
   const proj = PROJECTS[currentProjectId];
   const task = proj?.tasks.find(t => t.id === currentPanelTaskId);
   if (!task?.subtasks) return;
-  task.subtasks[idx].done = !task.subtasks[idx].done;
+  // Find by id (string) or by index (number for backward compat)
+  const sub = task.subtasks.find(s => s.id === subId) ||
+               task.subtasks[parseInt(subId)];
+  if (!sub) return;
+  sub.done = !sub.done;
   autoSaveData();
   renderPanelSubtasks();
+  renderTaskList();
 }
 
 function deleteSubtask(idx) {
